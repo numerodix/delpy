@@ -61,4 +61,4 @@ comments, but no overrides. The idea of parsing Delphi without comments is in
 my view impractical.
 
 The grammar has been used in the delpy project, see: 
-http://sourceforge.net/projects/delpysuite/
+http://delpysuite.sourceforge.net/
