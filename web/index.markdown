@@ -19,6 +19,7 @@ Delphi, your mileage may vary.
 `delpy` was written by Martin Matusiak in 2010 and is a by-product of my
 master's thesis at Utrecht University.
 
+* [Download](https://sourceforge.net/projects/delpysuite/files)
 
 ## To begin with
 
