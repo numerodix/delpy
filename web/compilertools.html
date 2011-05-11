@@ -1,0 +1,196 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<title>compilertools</title>
+<style type="text/css" media="screen">
+body {
+    font-family: 'Lucida Grande', Verdana, Arial, Sans-Serif;
+    font-size: 62.5%;
+    font-size-adjust: none;
+	margin-bottom: 50px;
+}
+#page {
+    font-size: 127%;
+    line-height: 1.5em;
+}
+a {
+    color: #0066B2;
+    text-decoration: none;
+/*    text-transform: capitalize; */
+}
+a:visited {
+    color: #803a39;
+}
+a:hover {
+    color: #114477;
+    text-decoration: underline;
+}
+h1, h2, h3, h4, h5, h6 {
+    border-bottom: 1px solid #AAAAAA;
+    font-weight: normal;
+/*    text-transform: capitalize; */
+}
+h1 {
+    font-size: 188%;
+    line-height: 1.2em;
+    margin-bottom: 0.1em;
+    padding-bottom: 0;
+}
+h2 {
+    font-size: 150%;
+    margin-bottom: 0.6em;
+    margin: 0;
+    padding-bottom: 0.17em;
+    padding-top: 0.5em;
+}
+h3, h4, h5, h6, {
+    font-size: 132%;
+    font-weight: bold;
+    margin-bottom: 0px;
+    margin-top: 8px;
+}
+code {
+	font: 0.86em 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Courier New', Courier, Fixed;
+	color: #14568A;
+	display: inline-block;
+}
+pre code {
+	margin-left: 14px;
+
+}
+hr {
+	border: 0;
+	margin-top: 2em;
+}
+.toctitle {
+    font-weight: bold;
+    margin-top: 7px;
+    text-align: center;
+}
+.toc {
+    background-color: #F9F9F9;
+    border: 1px solid #AAAAAA;
+    font-size: 95%;
+    margin-bottom: 10px;
+    margin-top: 5px;
+    padding-bottom: 5px;
+    width: 45%;
+}
+.toc ol {
+    margin: 0px 5px 0px 5px;
+    padding-bottom: 0;
+    padding-top: 0;
+    padding-left: 25px;
+}
+.toc ol ol {
+    padding-left: 15px;
+}
+.toc li {
+    margin: 0;
+    padding: 0;
+}
+.content ol {
+    margin-bottom: 7px;
+    margin-top: 7px;
+    padding-left: 20px;
+}
+.content ol li {
+    margin-left: 10px;
+}
+.content ol ol {
+    margin-bottom: 7px;
+    margin-top: 7px;
+    padding-left: 25px;
+}
+.url_host {
+    font-size: 88%;
+    color: gray;
+}
+.url_note {
+/*    background-color: #F9F9F9; */
+/*    border: 1px dashed #AAAAAA; */
+    color: #333;
+/*    font-style: italic; */
+    font-size: 88%;
+    padding: 0px 2px 5px 14px;
+}
+ 
+/* Cancel indentation at level1 due to level0 */
+ol ol.level1 {
+    padding-left: 0px;
+}
+ol.level0 .h1 {
+    margin-left: -20px;
+}
+
+ul {
+	list-style-type:square;
+}
+ 
+/* Text markup */
+.timestamp {
+    font-size: 90%;
+    font-style: italic;
+    color: #666;
+    padding-right: 3px;
+}
+.content ol { padding-left: 20px; }
+</style>
+</head>
+<body>
+	<div id="page">
+<h1>Setting up a local BDS</h1>
+
+<p>Before it can trace and compile programs, <code>delpy</code> needs a copy of BDS 2006
+(actually a subset of it) that it will co-locate with itself. So the directory
+structure needs to be:</p>
+
+<pre><code>delpy/
+dcc32/
+</code></pre>
+
+<p>where <code>dcc32</code> contains the files from BDS. The tool <code>compilertools.py</code> will do
+this for you. Run the tool to see if this has been done already:</p>
+
+<pre><code>C:\code\delpy&gt; compilertools.py
+! Missing: C:\code\dcc32\bin\DCC32.EXE ...
+! Missing: C:\code\dcc32\bin\borlndmm.dll ...
+! Missing: C:\code\dcc32\bin\rlink32.dll ...
+! Missing: C:\code\dcc32\lib ...
+! Missing: C:\code\dcc32\src ...
+Files needed from the Borland Delphi distribution (on path ${BDS}), to be
+placed in directories under the base directory (C:\code\dcc32):
+
+${BDS}\Bin\DCC32.EXE                 -&gt;  C:\code\dcc32\bin\DCC32.EXE
+${BDS}\Bin\borlndmm.dll              -&gt;  C:\code\dcc32\bin\borlndmm.dll
+${BDS}\Bin\rlink32.dll               -&gt;  C:\code\dcc32\bin\rlink32.dll
+${BDS}\lib\**                        -&gt;  C:\code\dcc32\lib\**
+${BDS}\source\**                     -&gt;  C:\code\dcc32\src\**
+
+To install the missing tools:
+ C:\code\delpy\compilertools.py ${BDS}
+</code></pre>
+
+<p>To perform the copy run the tool with the path to where BDS is installed.</p>
+
+<pre><code>C:\code\delpy&gt; compilertools.py C:\Program Files\Borland\BDS\4.0
+</code></pre>
+
+<p>The same under Cygwin:</p>
+
+<pre><code>$ compilertools.py /cygwin/c/Program\ Files/Borland/BDS/4.0
+</code></pre>
+
+<p>If you're doing this under Linux and you're wondering how to access the files
+from Windows, you can do this over a virtual machine shared folder, for example.</p>
+
+<p>To confirm that everything worked correctly run the tool again without
+arguments. If it outputs nothing then everything is in order.</p>
+
+<pre><code>C:\code\delpy&gt; compilertools.py
+</code></pre>
+</div>
+</body>
+</html>

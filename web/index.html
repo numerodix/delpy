@@ -1,0 +1,198 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<title>index</title>
+<style type="text/css" media="screen">
+body {
+    font-family: 'Lucida Grande', Verdana, Arial, Sans-Serif;
+    font-size: 62.5%;
+    font-size-adjust: none;
+	margin-bottom: 50px;
+}
+#page {
+    font-size: 127%;
+    line-height: 1.5em;
+}
+a {
+    color: #0066B2;
+    text-decoration: none;
+/*    text-transform: capitalize; */
+}
+a:visited {
+    color: #803a39;
+}
+a:hover {
+    color: #114477;
+    text-decoration: underline;
+}
+h1, h2, h3, h4, h5, h6 {
+    border-bottom: 1px solid #AAAAAA;
+    font-weight: normal;
+/*    text-transform: capitalize; */
+}
+h1 {
+    font-size: 188%;
+    line-height: 1.2em;
+    margin-bottom: 0.1em;
+    padding-bottom: 0;
+}
+h2 {
+    font-size: 150%;
+    margin-bottom: 0.6em;
+    margin: 0;
+    padding-bottom: 0.17em;
+    padding-top: 0.5em;
+}
+h3, h4, h5, h6, {
+    font-size: 132%;
+    font-weight: bold;
+    margin-bottom: 0px;
+    margin-top: 8px;
+}
+code {
+	font: 0.86em 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Courier New', Courier, Fixed;
+	color: #14568A;
+	display: inline-block;
+}
+pre code {
+	margin-left: 14px;
+
+}
+hr {
+	border: 0;
+	margin-top: 2em;
+}
+.toctitle {
+    font-weight: bold;
+    margin-top: 7px;
+    text-align: center;
+}
+.toc {
+    background-color: #F9F9F9;
+    border: 1px solid #AAAAAA;
+    font-size: 95%;
+    margin-bottom: 10px;
+    margin-top: 5px;
+    padding-bottom: 5px;
+    width: 45%;
+}
+.toc ol {
+    margin: 0px 5px 0px 5px;
+    padding-bottom: 0;
+    padding-top: 0;
+    padding-left: 25px;
+}
+.toc ol ol {
+    padding-left: 15px;
+}
+.toc li {
+    margin: 0;
+    padding: 0;
+}
+.content ol {
+    margin-bottom: 7px;
+    margin-top: 7px;
+    padding-left: 20px;
+}
+.content ol li {
+    margin-left: 10px;
+}
+.content ol ol {
+    margin-bottom: 7px;
+    margin-top: 7px;
+    padding-left: 25px;
+}
+.url_host {
+    font-size: 88%;
+    color: gray;
+}
+.url_note {
+/*    background-color: #F9F9F9; */
+/*    border: 1px dashed #AAAAAA; */
+    color: #333;
+/*    font-style: italic; */
+    font-size: 88%;
+    padding: 0px 2px 5px 14px;
+}
+ 
+/* Cancel indentation at level1 due to level0 */
+ol ol.level1 {
+    padding-left: 0px;
+}
+ol.level0 .h1 {
+    margin-left: -20px;
+}
+
+ul {
+	list-style-type:square;
+}
+ 
+/* Text markup */
+.timestamp {
+    font-size: 90%;
+    font-style: italic;
+    color: #666;
+    padding-right: 3px;
+}
+.content ol { padding-left: 20px; }
+</style>
+</head>
+<body>
+	<div id="page">
+<p><code>delpy</code> is a collection of Python tools for working with legacy Delphi
+codebases.</p>
+
+<p>With <code>delpy</code> you can:</p>
+
+<ul>
+<li>Explore an unknown codebase and discover what it contains.</li>
+<li>Visualize a program as a graph showing all the files it includes and how
+they depend on each other.</li>
+<li>Compile a program/library outside of the IDE (reproducable automated builds 
+that can be run on your build server).</li>
+<li>Preprocess a codebase to get rid of preprocessor statements.</li>
+<li>Prune the codebase removing all files not part of the source of any program.</li>
+<li>Prettify source code.</li>
+</ul>
+
+<p><code>delpy</code> has been tested against 6 million lines of code written with Borland Developer
+Studio 2006. If you compile your program with a different version of
+Delphi, your mileage may vary.</p>
+
+<p><code>delpy</code> was written by Martin Matusiak in 2010 and is a by-product of my
+master's thesis at Utrecht University.</p>
+
+<h2>To begin with</h2>
+
+<ul>
+<li><a href="up_and_running.html">Get up and running with delpy</a></li>
+<li><a href="program_basics.html">The basics of Delphi programs</a></li>
+</ul>
+
+<h2>Tools</h2>
+
+<ul>
+<li><a href="compilertools.html">compilertools.py</a> - Setting up a local BDS</li>
+<li><a href="viewgraph.html">viewgraph.py</a> - Tracing programs and viewing the program graph</li>
+<li><a href="explore_codebase.html">explore_codebase.py</a> - Exploring a codebase</li>
+<li><a href="graphdiff.html">graphdiff.py</a> - Comparing graphs</li>
+<li><a href="makedelphi.html">makedelphi.py</a> - Compiling Delphi programs</li>
+<li><a href="preprocess.html">preprocess.py</a> - Preprocessing a codebase</li>
+<li><a href="prunecodebase.html">prunecodebase.py</a> - Pruning a codebase</li>
+<li><a href="delphiparser.html">delphiparser.py</a> - Prettifying source code</li>
+</ul>
+
+<h2>Advanced uses</h2>
+
+<p><code>delpy</code> is not only a tool suite, but also a full blown program transformation
+framework.</p>
+
+<ul>
+<li><a href="parser.html">The parser</a></li>
+<li><a href="grammar.html">The grammar</a></li>
+</ul>
+</div>
+</body>
+</html>

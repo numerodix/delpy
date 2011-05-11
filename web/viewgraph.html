@@ -1,0 +1,453 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<title>viewgraph</title>
+<style type="text/css" media="screen">
+body {
+    font-family: 'Lucida Grande', Verdana, Arial, Sans-Serif;
+    font-size: 62.5%;
+    font-size-adjust: none;
+	margin-bottom: 50px;
+}
+#page {
+    font-size: 127%;
+    line-height: 1.5em;
+}
+a {
+    color: #0066B2;
+    text-decoration: none;
+/*    text-transform: capitalize; */
+}
+a:visited {
+    color: #803a39;
+}
+a:hover {
+    color: #114477;
+    text-decoration: underline;
+}
+h1, h2, h3, h4, h5, h6 {
+    border-bottom: 1px solid #AAAAAA;
+    font-weight: normal;
+/*    text-transform: capitalize; */
+}
+h1 {
+    font-size: 188%;
+    line-height: 1.2em;
+    margin-bottom: 0.1em;
+    padding-bottom: 0;
+}
+h2 {
+    font-size: 150%;
+    margin-bottom: 0.6em;
+    margin: 0;
+    padding-bottom: 0.17em;
+    padding-top: 0.5em;
+}
+h3, h4, h5, h6, {
+    font-size: 132%;
+    font-weight: bold;
+    margin-bottom: 0px;
+    margin-top: 8px;
+}
+code {
+	font: 0.86em 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Courier New', Courier, Fixed;
+	color: #14568A;
+	display: inline-block;
+}
+pre code {
+	margin-left: 14px;
+
+}
+hr {
+	border: 0;
+	margin-top: 2em;
+}
+.toctitle {
+    font-weight: bold;
+    margin-top: 7px;
+    text-align: center;
+}
+.toc {
+    background-color: #F9F9F9;
+    border: 1px solid #AAAAAA;
+    font-size: 95%;
+    margin-bottom: 10px;
+    margin-top: 5px;
+    padding-bottom: 5px;
+    width: 45%;
+}
+.toc ol {
+    margin: 0px 5px 0px 5px;
+    padding-bottom: 0;
+    padding-top: 0;
+    padding-left: 25px;
+}
+.toc ol ol {
+    padding-left: 15px;
+}
+.toc li {
+    margin: 0;
+    padding: 0;
+}
+.content ol {
+    margin-bottom: 7px;
+    margin-top: 7px;
+    padding-left: 20px;
+}
+.content ol li {
+    margin-left: 10px;
+}
+.content ol ol {
+    margin-bottom: 7px;
+    margin-top: 7px;
+    padding-left: 25px;
+}
+.url_host {
+    font-size: 88%;
+    color: gray;
+}
+.url_note {
+/*    background-color: #F9F9F9; */
+/*    border: 1px dashed #AAAAAA; */
+    color: #333;
+/*    font-style: italic; */
+    font-size: 88%;
+    padding: 0px 2px 5px 14px;
+}
+ 
+/* Cancel indentation at level1 due to level0 */
+ol ol.level1 {
+    padding-left: 0px;
+}
+ol.level0 .h1 {
+    margin-left: -20px;
+}
+
+ul {
+	list-style-type:square;
+}
+ 
+/* Text markup */
+.timestamp {
+    font-size: 90%;
+    font-style: italic;
+    color: #666;
+    padding-right: 3px;
+}
+.content ol { padding-left: 20px; }
+</style>
+</head>
+<body>
+	<div id="page">
+<h1>Tracing programs</h1>
+
+<p>To trace a program is to start from a <code>Program</code> file (or <code>Library</code>/<code>Package</code>)
+and discover which files it refers to (depends on). Then, with each of those
+files we repeat the process recursively until, in the end, we have the complete 
+dependency graph of the program.</p>
+
+<p>Depending on the type of file, however, dependencies can be declared in
+different ways.</p>
+
+<h2>Tracing a <code>DelphiProjectGroup</code></h2>
+
+<p>This is an xml file and dependencies are listed like so:</p>
+
+<pre><code>&lt;BorlandProject&gt;
+    ...
+    &lt;Default.Personality&gt;
+        &lt;Projects&gt;
+            &lt;Projects Name="Flagship.exe"&gt;Flagship.bdsproj&lt;/Projects&gt;
+            &lt;Projects Name="Sideshow.exe"&gt;Sideshow.bdsproj&lt;/Projects&gt;
+            &lt;Projects Name="Targets"&gt;Flagship.exe Sideshow.exe&lt;/Projects&gt;
+        &lt;/Projects&gt;
+        ...
+    &lt;/Default.Personality&gt;
+    ...
+&lt;/BorlandProject&gt;
+</code></pre>
+
+<p>The dependencies are <code>Flagship.bdsproj</code> and <code>Sideshow.bdsproj</code>.</p>
+
+<h2>Tracing a <code>DelphiProject</code></h2>
+
+<p>This is an xml file and dependencies are listed like so:</p>
+
+<pre><code>&lt;BorlandProject&gt;
+    ...
+    &lt;Delphi.Personality&gt;
+        &lt;Source&gt;
+            &lt;Source Name="MainSource"&gt;Flagship.dpr&lt;/Source&gt;
+        &lt;/Source&gt;
+        ...
+        &lt;Directories&gt;
+            ...
+            &lt;Directories Name="SearchPath"&gt;..;..\..\Lib&lt;/Directories&gt;
+            ...
+        &lt;/Directories&gt;
+    &lt;/Delphi.Personality&gt;
+    ...
+&lt;/BorlandProject&gt;
+</code></pre>
+
+<p>The dependency is <code>Flagship.dpr</code>.</p>
+
+<p>In addition, the <code>SearchPath</code> is of vital importance, because it tells us
+about the locations in which we shall find all the sources of the program, in
+the event that they are not all in the same directory.</p>
+
+<h2>Tracing source code</h2>
+
+<p>Source code files have different types of dependencies.</p>
+
+<h3>Uses (file types: <code>Unit</code>, <code>Program</code>, <code>Library</code>)</h3>
+
+<p>The most important type of dependency is a dependency on another <code>Unit</code> and is
+declared as follows.</p>
+
+<pre><code>uses
+  Forms,
+  MainWindow in '..\MainWindow.pas' {FormWindow};
+</code></pre>
+
+<p>This file depends on <code>Forms</code> (found in <code>Forms.pas</code>) and MainWindow (found in
+<code>..\MainWindow.pas</code>).</p>
+
+<h3>Contains (file types: <code>Package</code>)</h3>
+
+<p>This statement declares the exports of a package:</p>
+
+<pre><code>contains
+  uPSC_extctrls in 'uPSC_extctrls.pas',
+  uPSC_forms in 'uPSC_forms.pas';
+</code></pre>
+
+<h3>Resources (file types: <code>Unit</code>, <code>Program</code>, <code>Library</code>, <code>Package</code>)</h3>
+
+<p>Resources are declared with a preprocessor statement:</p>
+
+<pre><code>{$R *.res}
+{$R *.dfm}
+{$R '..\Source\SynEditReg.dcr'}
+{$R 'UserControls\ucMenu.TucMenu.resources' 'UserControls\ucMenu.resx'}
+</code></pre>
+
+<p>The asterisk is not a wildcard, it will only match a single file, so if this
+statement is found in a file <code>MainWindows.pas</code>, the <code>Resource</code> is called
+<code>MainWindow.res</code>.</p>
+
+<h3>File includes (file types: <code>Unit</code>, <code>Program</code>, <code>Library</code>, <code>Package</code>)</h3>
+
+<p><code>FileInclude</code>s are declared with a preprocessor statement:</p>
+
+<pre><code>{$I vars.pas.inc}
+</code></pre>
+
+<h3>Binary objects (file types: <code>Unit</code>, <code>Program</code>, <code>Library</code>)</h3>
+
+<p><code>BinaryObject</code> files are declared with a preprocessor statement (the two
+variants are equivalent):</p>
+
+<pre><code>{$L file.obj}
+{$LINK file.obj}
+</code></pre>
+
+<h2>Limitations to tracing</h2>
+
+<h3><code>CompiledUnit</code>s</h3>
+
+<p><code>delpy</code> can only find dependencies in source code, so once a <code>CompiledUnit</code> is
+reached, it cannot be traced to discover its dependencies. This means that if
+you want to use a program graph to find all the sources of a program you have
+to set up the search path to point to the source code of all your libraries.</p>
+
+<p>Once you have a program graph it's easy to check if any <code>.dcu</code> files are
+present just by listing all the files (see below).</p>
+
+<p><a id="Preprocessor_statements"></a></p>
+
+<h3>Preprocessor statements</h3>
+
+<p>Tracing source code is not fully accurate since Delphi code contains
+preprocessor statements. A <code>uses</code> statement like the one below cannot be parsed
+correctly without first evaluating the preprocessor code.</p>
+
+<pre><code>uses
+  {$IFDEF DEBUG}
+    Testing,
+  {$ELSE}
+    Production,
+  {$ENDIF}
+  Windows;
+</code></pre>
+
+<p>But this evaluation
+takes place at compile time, at which point the symbol <code>DEBUG</code> will either be
+set or not, depending on the compiler flags (and it may differ between
+successive compilations). Thus we cannot evaluate this statement while tracing,
+and all we can do is treat the preprocessor directives as comments and
+thus treat both <code>Testing</code> and <code>Production</code> as dependencies even though no
+build of this program will include them both.</p>
+
+<p>This will produce false positives when the graph is used to verify that all
+files in the graph are present on the filesystem.</p>
+
+<p>To obtain a completely accurate graph, <a href="preprocess.html">preprocess</a> the source 
+code first.</p>
+
+<h2>Producing program graphs</h2>
+
+<p>The product of a program trace is a program graph, written to disk as a
+<code>.graph</code> file. To visualize the graph, the tool <code>viewgraph.py</code> produces a graph 
+that is rendered using <code>graphviz</code> to a <code>.pdf</code> file and displayed in a pdf viewer.</p>
+
+<p>You can pick any file as the starting point of a trace, but to obtain a graph
+of the whole program you have to start from a <code>Program</code> file (or
+<code>Library</code>/<code>Package</code>). If codebase also contains a <code>DelphiProject</code> for the
+program, use that instead to make sure the trace can find all the sources.</p>
+
+<h3>Default view</h3>
+
+<p>A typical graph looks like this:</p>
+
+<pre><code>$ viewgraph.py PriceCheck.bdsproj
+</code></pre>
+
+<p><img src="imgs/pricecheck_default.png" alt="A typical program graph" title="" /></p>
+
+<p>File extensions are not shown for <code>Unit</code>s.</p>
+
+<h3>With resources</h3>
+
+<p>By default <code>viewgraph.py</code> filters out certain types of files (they are part of
+the graph but not present in the picture to make it simpler):</p>
+
+<pre><code>$ viewgraph.py --help
+...
+Options:
+...
+  --all                 don't filter any files (below)
+  --dcu                 default
+  --no-dcu              
+  --obj                 
+  --no-obj              default
+  --stdlib              
+  --no-stdlib           default
+  --resources           
+  --no-resources        default
+</code></pre>
+
+<p>Running with the <code>--resources</code> flags we can make the <code>Form</code>s and <code>Resource</code>s appear 
+too: </p>
+
+<pre><code>$ viewgraph.py PriceCheck.bdsproj --resources
+</code></pre>
+
+<p><img src="imgs/pricecheck_resources.png" alt="A program graph including resources" title="" /></p>
+
+<h3>Exhaustive graph</h3>
+
+<p>Finally, for an exhaustive view we can pass the <code>--all</code> flag to also show files
+from the standard library:</p>
+
+<pre><code>$ viewgraph.py PriceCheck.bdsproj --all
+</code></pre>
+
+<p><img src="imgs/pricecheck_all.png" alt="An exhaustive program graph" title="" /></p>
+
+<p><code>CompiledUnit</code>s are shown in a darker shade than <code>Unit</code>s.</p>
+
+<h2>Using the program graph</h2>
+
+<p>Once we have produced a program graph, we can use it to find out things about
+the program.</p>
+
+<p>We can check where the codebase is on disk:</p>
+
+<pre><code>$ viewgraph.py /tmp/.PriceCheck.bdsproj.graph --ls-abspath
+/home/frank/code/samples/pricecheck
+</code></pre>
+
+<p>We can list all the files (their path is relative to the absolute path of the
+codebase and to the 
+root of the graph, ie. the first file that appears here):</p>
+
+<pre><code>$ viewgraph.py /tmp/.PriceCheck.bdsproj.graph --ls --all
+PriceCheck.bdsproj
+PriceCheck.dpr
+../../dcc32/lib/Forms.dcu
+Gui.pas
+../../dcc32/lib/Windows.dcu
+../../dcc32/lib/Messages.dcu
+../../dcc32/lib/SysUtils.dcu
+../../dcc32/lib/Variants.dcu
+../../dcc32/lib/Classes.dcu
+../../dcc32/lib/Graphics.dcu
+../../dcc32/lib/Controls.dcu
+../../dcc32/lib/Dialogs.dcu
+../../dcc32/lib/StdCtrls.dcu
+Core.pas
+SocketTypes.pas
+../../dcc32/lib/Indy9/IdTCPConnection.dcu
+SocketMarshall.pas
+SocketClient.pas
+../../dcc32/lib/Indy9/IdTCPClient.dcu
+SocketInfo.pas
+Gui.dfm
+PriceCheck.res
+PriceCheck.cfg
+</code></pre>
+
+<p>We can look up the search path:</p>
+
+<pre><code>$ viewgraph.py /tmp/.PriceCheck.bdsproj.graph --ls-searchpath
+../HtmlLib
+C:\ZipLib
+</code></pre>
+
+<p>And we can look up the path to the standard library:</p>
+
+<pre><code>$ viewgraph.py /tmp/.PriceCheck.bdsproj.graph --ls-stdlibpath
+../../dcc32/lib
+../../dcc32/lib/Indy9
+</code></pre>
+
+<h2>Detecting common problems in program graphs</h2>
+
+<p><code>viewgraph.py</code> can diagnose some basic problems in program graphs. Run it with
+the <code>--lint</code> flag on a file to trace, or on an existing <code>.graph</code> file:</p>
+
+<pre><code>C:\code&gt; viewgraph.py PriceCheck.bdsproj --lint
+Searchpath paths not relative:
+ * C:\ZipLib
+Files not found:
+ * Gui.dfm
+</code></pre>
+
+<p>The first warning concerns the search path, which is defined in the
+<code>PriceCheck.bdsproj</code> like this:</p>
+
+<pre><code>&lt;Directories Name="SearchPath"&gt;..\HtmlLib;C:\ZipLib&lt;/Directories&gt;
+</code></pre>
+
+<p>Here the first path is relative, the second is absolute. This is a problem waiting
+to happen, because if ever the codebase is traced or compiled on a different
+machine, the path <code>C:\ZipLib</code> may not be present. It is much preferable to
+co-locate all the libraries with the codebase and make the search path
+relative.</p>
+
+<p>Non-relative paths on the search path can also break tracing/compilation on
+Cygwin/Linux.</p>
+
+<p>If you traced the program some time ago and you want to check if all the files
+are still on disk, use the <code>--verify</code> flag (set <code>--all</code> to check all files):</p>
+
+<pre><code>$ viewgraph.py --verify --all /tmp/.PriceCheck.bdsproj.graph
+Files not found:
+ * Gui.dfm
+</code></pre>
+</div>
+</body>
+</html>

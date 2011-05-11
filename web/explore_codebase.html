@@ -1,0 +1,341 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<title>explore_codebase</title>
+<style type="text/css" media="screen">
+body {
+    font-family: 'Lucida Grande', Verdana, Arial, Sans-Serif;
+    font-size: 62.5%;
+    font-size-adjust: none;
+	margin-bottom: 50px;
+}
+#page {
+    font-size: 127%;
+    line-height: 1.5em;
+}
+a {
+    color: #0066B2;
+    text-decoration: none;
+/*    text-transform: capitalize; */
+}
+a:visited {
+    color: #803a39;
+}
+a:hover {
+    color: #114477;
+    text-decoration: underline;
+}
+h1, h2, h3, h4, h5, h6 {
+    border-bottom: 1px solid #AAAAAA;
+    font-weight: normal;
+/*    text-transform: capitalize; */
+}
+h1 {
+    font-size: 188%;
+    line-height: 1.2em;
+    margin-bottom: 0.1em;
+    padding-bottom: 0;
+}
+h2 {
+    font-size: 150%;
+    margin-bottom: 0.6em;
+    margin: 0;
+    padding-bottom: 0.17em;
+    padding-top: 0.5em;
+}
+h3, h4, h5, h6, {
+    font-size: 132%;
+    font-weight: bold;
+    margin-bottom: 0px;
+    margin-top: 8px;
+}
+code {
+	font: 0.86em 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Courier New', Courier, Fixed;
+	color: #14568A;
+	display: inline-block;
+}
+pre code {
+	margin-left: 14px;
+
+}
+hr {
+	border: 0;
+	margin-top: 2em;
+}
+.toctitle {
+    font-weight: bold;
+    margin-top: 7px;
+    text-align: center;
+}
+.toc {
+    background-color: #F9F9F9;
+    border: 1px solid #AAAAAA;
+    font-size: 95%;
+    margin-bottom: 10px;
+    margin-top: 5px;
+    padding-bottom: 5px;
+    width: 45%;
+}
+.toc ol {
+    margin: 0px 5px 0px 5px;
+    padding-bottom: 0;
+    padding-top: 0;
+    padding-left: 25px;
+}
+.toc ol ol {
+    padding-left: 15px;
+}
+.toc li {
+    margin: 0;
+    padding: 0;
+}
+.content ol {
+    margin-bottom: 7px;
+    margin-top: 7px;
+    padding-left: 20px;
+}
+.content ol li {
+    margin-left: 10px;
+}
+.content ol ol {
+    margin-bottom: 7px;
+    margin-top: 7px;
+    padding-left: 25px;
+}
+.url_host {
+    font-size: 88%;
+    color: gray;
+}
+.url_note {
+/*    background-color: #F9F9F9; */
+/*    border: 1px dashed #AAAAAA; */
+    color: #333;
+/*    font-style: italic; */
+    font-size: 88%;
+    padding: 0px 2px 5px 14px;
+}
+ 
+/* Cancel indentation at level1 due to level0 */
+ol ol.level1 {
+    padding-left: 0px;
+}
+ol.level0 .h1 {
+    margin-left: -20px;
+}
+
+ul {
+	list-style-type:square;
+}
+ 
+/* Text markup */
+.timestamp {
+    font-size: 90%;
+    font-style: italic;
+    color: #666;
+    padding-right: 3px;
+}
+.content ol { padding-left: 20px; }
+</style>
+</head>
+<body>
+	<div id="page">
+<h1>Exploring a codebase</h1>
+
+<p>Orienting yourself in a huge legacy codebase can be a serious challenge in
+itself. A number of concrete questions come to mind:</p>
+
+<ul>
+<li>How many build targets can be built from the codebase and what are they?</li>
+<li>... the same question formulated differently: how many program graphs exist in the
+codebase?</li>
+<li>Are there source files floating around that don't belong to any program?</li>
+</ul>
+
+<h2>A well behaved example</h2>
+
+<p>A simple file listing is a logical place to start, but is soon too large to
+make sense of:</p>
+
+<pre><code>$ find treetest/ | sort
+treetest/
+treetest/Lib
+treetest/Lib/Lib.pas
+treetest/Src
+treetest/Src/MainWindow.dfm
+treetest/Src/MainWindow.pas
+treetest/Src/Module.pas
+treetest/Src/Project
+treetest/Src/Project/Flagship.bdsproj
+treetest/Src/Project/Flagship.bdsproj.local
+treetest/Src/Project/Flagship.cfg
+treetest/Src/Project/Flagship.dpr
+treetest/Src/Project/Flagship.identcache
+treetest/Src/Project/Flagship.res
+treetest/Src/Project/Sideshow.bdsproj
+treetest/Src/Project/Sideshow.bdsproj.local
+treetest/Src/Project/Sideshow.cfg
+treetest/Src/Project/Sideshow.dpr
+treetest/Src/Project/Sideshow.identcache
+treetest/Src/Project/Sideshow.res
+treetest/Src/Project/Suite.bdsgroup
+treetest/Src/Project/Suite.bdsgroup.local
+treetest/Src/SideWindow.dfm
+treetest/Src/SideWindow.pas
+</code></pre>
+
+<p>With the codebase explorer we can distill this down to a structured view,
+listing the files by order of importance to the overall codebase:</p>
+
+<pre><code>$ explore_codebase.py treetest/
+DelphiProjectGroup:
+- treetest/Src/Project/Suite.bdsgroup
+DelphiProject:
+- treetest/Src/Project/Flagship.bdsproj
+- treetest/Src/Project/Sideshow.bdsproj
+Program:
+- treetest/Src/Project/Flagship.dpr
+- treetest/Src/Project/Sideshow.dpr
+</code></pre>
+
+<p>But at this stage it is only a categorization of files by type. With the trace
+option we can take every build target and compute its graph, showing it as a
+tree:</p>
+
+<pre><code>$ explore_codebase.py treetest/ -t
+Graphs:
+= treetest/Src/Project/Suite.bdsgroup =
+-- treetest/Src/Project/Sideshow.bdsproj
+--- treetest/Src/Project/Sideshow.dpr
+-- treetest/Src/Project/Flagship.bdsproj
+--- treetest/Src/Project/Flagship.dpr
+</code></pre>
+
+<p>Here we can see that <code>Sideshow.bdsproj</code> and <code>Flagship.bdsproj</code> do indeed belong to
+<code>Suite.bdsgroup</code>, thus when we list the program graphs we see
+that this codebase contains only one graph, whose root is <code>Suite.bdsgroup</code>.</p>
+
+<p>Once we know the root of the graph we can investigate further:</p>
+
+<pre><code>$ viewgraph.py treetest/Src/Project/Suite.bdsgroup
+</code></pre>
+
+<p><img src="imgs/treetest_suite.png" alt="Alt text" title="" /></p>
+
+<h2>A more complex example</h2>
+
+<p>Let's start, as before, with a file listing:</p>
+
+<pre><code>$ find | wc -l
+157
+</code></pre>
+
+<p>157 files, that's going to be painful to sift through. Let's try the explorer:</p>
+
+<pre><code>$ explore_codebase.py .
+DelphiProjectGroup:
+- ./bdstest/Apps.bdsgroup
+- ./treetest/Src/Project/Suite.bdsgroup
+DelphiProject:
+- ./bdstest/Console.bdsproj
+- ./bdstest/Gui.bdsproj
+- ./mixedsrc/GimmeInts.bdsproj
+- ./pcheck/PriceCheck.bdsproj
+- ./pricecheck/PriceCheck.bdsproj
+- ./treetest/Src/Project/Flagship.bdsproj
+- ./treetest/Src/Project/Sideshow.bdsproj
+Program:
+- ./bdstest/Console.dpr
+- ./bdstest/Gui.dpr
+- ./casetest/Main.dpr
+- ./codedgui/CodedGui.dpr
+- ./commenttest/Comments.dpr
+- ./cyclic/App.dpr
+- ./dlltest/Main.dpr
+- ./guid/Classed.dpr
+- ./guid/ClsMeth.dpr
+- ./guid/Main.dpr
+- ./guid/Matching.dpr
+- ./guid/TryAsm.dpr
+- ./guitest/GuiTest.dpr
+- ./mixedsrc/GimmeInts.dpr
+- ./pathshadow/Main.dpr
+- ./pcheck/PriceCheck.dpr
+- ./pcheck/RunServer.dpr
+- ./preproc/Root.dpr
+- ./pricecheck/PriceCheck.dpr
+- ./pricecheck/RunServer.dpr
+- ./readxml/Trivial.dpr
+- ./socket/RunClient.dpr
+- ./socket/RunServer.dpr
+- ./treetest/Src/Project/Flagship.dpr
+- ./treetest/Src/Project/Sideshow.dpr
+- ./trivial/Example.dpr
+Library:
+- ./dlltest/LibMax.dpr
+- ./dlltest/LibMin.dpr
+</code></pre>
+
+<p>Quite informative, but it tells us nothing about the interdependencies.
+From the previous example we already know that 
+<code>treetest/Src/Project/Flagship.dpr</code> belongs to
+<code>treetest/Src/Project/Flagship.bdsproj</code>. What if we apply the same process and
+subsume all the nodes in every program graph under the root? That should give
+us a list of graphs, plus any files that don't belong to any graph.</p>
+
+<pre><code>$ explore_codebase.py . -t
+Graphs:
+= bdstest/Apps.bdsgroup =
+-- bdstest/Gui.bdsproj
+--- bdstest/Gui.dpr
+-- bdstest/Console.bdsproj
+--- bdstest/Console.dpr
+= treetest/Src/Project/Suite.bdsgroup =
+-- treetest/Src/Project/Sideshow.bdsproj
+--- treetest/Src/Project/Sideshow.dpr
+-- treetest/Src/Project/Flagship.bdsproj
+--- treetest/Src/Project/Flagship.dpr
+= mixedsrc/GimmeInts.bdsproj =
+-- mixedsrc/GimmeInts.dpr
+= pcheck/PriceCheck.bdsproj =
+-- pcheck/PriceCheck.dpr
+= pricecheck/PriceCheck.bdsproj =
+-- pricecheck/PriceCheck.dpr
+= casetest/Main.dpr =
+= codedgui/CodedGui.dpr =
+= commenttest/Comments.dpr =
+= cyclic/App.dpr =
+= dlltest/Main.dpr =
+= guid/Classed.dpr =
+= guid/ClsMeth.dpr =
+= guid/Main.dpr =
+= guid/Matching.dpr =
+= guid/TryAsm.dpr =
+= guitest/GuiTest.dpr =
+= pathshadow/Main.dpr =
+= pcheck/RunServer.dpr =
+= preproc/Root.dpr =
+= pricecheck/RunServer.dpr =
+= readxml/Trivial.dpr =
+= socket/RunClient.dpr =
+= socket/RunServer.dpr =
+= trivial/Example.dpr =
+= dlltest/LibMax.dpr =
+= dlltest/LibMin.dpr =
+
+Loose files:
+= Unit =
+- ./guid/Nested.pas
+- ./guid/Parsing.pas
+- ./guid/Strings.pas
+- ./pcheck/SocketClient.pas
+- ./trivial/Example.pas
+- ./trivial/NamespaceExample.pas
+- ./typetest/MyTypes.pas
+= Resource =
+- ./mixedsrc/Image.res
+</code></pre>
+</div>
+</body>
+</html>
