@@ -1,0 +1,14 @@
+unit CompiledUnit;
+
+interface
+
+function Gimme(): Integer;
+
+implementation
+
+function Gimme(): Integer;
+begin
+  Gimme := 2;
+end;
+
+end.

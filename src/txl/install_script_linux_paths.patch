@@ -1,0 +1,17 @@
+diff --git a/InstallTxl b/InstallTxl
+index 6fa0811..c3bda04 100755
+--- a/InstallTxl
++++ b/InstallTxl
+@@ -38,9 +38,9 @@ then
+ 		echo ""
+ 		echo "Installing TXL for $USER only."
+ 		DEFAULT=false
+-		TXLBIN=$HOME/bin
+-		TXLLIB=$HOME/txl/lib
+-		TXLMAN=$HOME/txl/man/man1
++		TXLBIN=$HOME/thesis/code/txl/dist-linux/bin
++		TXLLIB=$HOME/thesis/code/txl/dist-linux/txl/lib
++		TXLMAN=$HOME/thesis/code/txl/dist-linux/share/man/man1
+ 	else
+ 		exit 99
+ 	fi

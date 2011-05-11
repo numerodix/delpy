@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2010.02.18 13:28:52.353.bdsproj,C:\Documents and Settings\Owner\My Documents\Borland Studio Projects\Project1.bdsproj=C:\Documents and Settings\Owner\My Documents\Borland Studio Projects\Sideshow.bdsproj</Transaction>
+    <Transaction>2010.02.18 13:29:12.603.pas,C:\Documents and Settings\Owner\My Documents\Borland Studio Projects\Unit1.pas=C:\Documents and Settings\Owner\My Documents\Borland Studio Projects\SideWindow.pas</Transaction>
+    <Transaction>2010.02.18 13:29:12.603.dfm,C:\Documents and Settings\Owner\My Documents\Borland Studio Projects\Unit1.dfm=C:\Documents and Settings\Owner\My Documents\Borland Studio Projects\SideWindow.dfm</Transaction>
+    <Transaction>2010.02.18 13:29:37.493.pas,C:\Documents and Settings\Owner\My Documents\Borland Studio Projects\SideWindow.pas=C:\cygwin\home\Owner\thesis\code\explorer\samples\treetest\Src\SideWindow.pas</Transaction>
+    <Transaction>2010.02.18 13:29:37.493.dfm,C:\Documents and Settings\Owner\My Documents\Borland Studio Projects\SideWindow.dfm=C:\cygwin\home\Owner\thesis\code\explorer\samples\treetest\Src\SideWindow.dfm</Transaction>
+    <Transaction>2010.02.18 13:30:20.665.bdsproj,C:\Documents and Settings\Owner\My Documents\Borland Studio Projects\Sideshow.bdsproj=C:\cygwin\home\Owner\thesis\code\explorer\samples\treetest\Src\Project\Sideshow.bdsproj</Transaction>
+  </Transactions>
+</BorlandProject>

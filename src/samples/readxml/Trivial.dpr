@@ -1,0 +1,4 @@
+program Trivial;
+
+begin
+end.

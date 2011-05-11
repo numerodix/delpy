@@ -1,0 +1,181 @@
+unit SocketClient;
+
+interface
+
+uses Core;
+
+function ReadInteger: integer;
+procedure WriteInteger(i: integer);
+procedure WriteString(s: string);
+
+procedure ReadRecord(var rec);
+procedure WriteRecord(var rec);
+
+procedure ReadObject(args: array of Pointer; types: array of boolean); overload;
+procedure ReadObject(obj: Core.TCompany); overload;
+procedure WriteObject(args: array of Pointer; lengths: array of integer;
+  types: array of boolean); overload;
+procedure WriteObject(obj: Core.TCompany); overload;
+
+procedure Connect;
+procedure Disconnect;
+
+
+implementation
+
+uses
+  SysUtils, Classes, Variants,
+  IdTCPClient, IdTCPConnection,
+  SocketInfo, SocketMarshall;
+
+type
+  TConnectionHandler = class(TObject)
+    public
+      procedure HandleConnected(Sender: TObject);
+      procedure HandleDisconnected(Sender: TObject);
+  end;
+
+var
+  TCPClient: TIdTCPClient;
+  ConnectionHandler: TConnectionHandler;
+  Link: TIdTCPConnection;
+
+
+function ReadInteger: integer;
+begin
+  Connect;
+  Result := Link.ReadInteger;
+end;
+
+procedure WriteInteger(i: integer);
+begin
+  Connect;
+  Link.WriteInteger(i);
+end;
+
+procedure WriteString(s: string);
+begin
+  Connect;
+  Link.WriteLn(s);
+end;
+
+
+procedure ReadRecord(var rec);
+begin
+  Connect;
+  SocketMarshall.ReadRecord(Link, rec);
+end;
+
+procedure WriteRecord(var rec);
+begin
+  Connect;
+  SocketMarshall.WriteRecord(Link, rec, SizeOf(rec));
+end;
+
+
+procedure ReadObject(args: array of Pointer; types: array of boolean);
+begin
+  Connect;
+  SocketMarshall.ReadObject(Link, args, types);
+end;
+
+procedure ReadObject(obj: Core.TCompany);
+begin
+  Connect;
+  SocketMarshall.ReadObject(Link, obj);
+end;
+
+procedure WriteObject(args: array of Pointer; lengths: array of integer; types: array of boolean);
+begin
+  Connect;
+  SocketMarshall.WriteObject(Link, args, lengths, types);
+end;
+
+procedure WriteObject(obj: Core.TCompany);
+begin
+  Connect;
+  SocketMarshall.WriteObject(Link, obj);
+end;
+
+
+procedure TConnectionHandler.HandleConnected(Sender: TObject);
+{
+var
+  X: integer;
+  ss: TStringList;
+  memstr: TMemoryStream;
+  v, v2: Variant;
+}
+begin
+  System.WriteLn('(c) Client connected');
+  Link := TCPClient;
+{
+  X := -3;
+  WriteLn('(c) Transmit int: ' + IntToStr(X));
+  Link.WriteInteger(X);
+
+  ss := TStringList.Create;
+  ss.Add('fst');
+  ss.Add('snd');
+  WriteLn('(c) Transmit TStringList length: ' + IntToStr(ss.Count));
+  Link.WriteStrings(ss, true);
+  ss.Free;
+
+  v := true;
+  memstr := TMemoryStream.Create;
+//  wr := TWriter.Create(memstr, $ff);
+  memstr.Write(v, SizeOf(v));
+//  rr := TReader.Create(memstr, $ff);
+//  b := rr.ReadBoolean;
+  memstr.Position := 0;
+  memstr.Read(v2, memstr.Size);
+  WriteLn('(c) Transmit stream w/ variant: ' + VarToStr(v2));
+  WriteLn('(c) Transmit stream size: ' + IntToStr(memstr.Size));
+  Link.WriteInteger(memstr.Size);
+  WriteLn('(c) Transmit stream');
+  Link.OpenWriteBuffer;
+  Link.WriteStream(memstr);
+  Link.CloseWriteBuffer;
+  FreeAndNil(memstr);
+
+  WriteLn('(c) Received int: ' + IntToStr(Link.ReadInteger));
+}
+end;
+
+procedure TConnectionHandler.HandleDisconnected(Sender: TObject);
+begin
+  System.WriteLn('(c) Client disconnected');
+  Link := Nil;
+end;
+
+
+procedure Connect;
+begin
+  if ConnectionHandler = Nil then
+    ConnectionHandler := TConnectionHandler.Create;
+
+  if TCPClient = Nil then
+    begin
+      TCPClient := TIdTCPClient.Create(Nil);
+      TCPClient.OnConnected := ConnectionHandler.HandleConnected;
+      TCPClient.OnDisconnected := ConnectionHandler.HandleDisconnected;
+    end;
+
+
+  if not TCPClient.Connected then
+    try
+      TCPClient.Host := SocketConnectionIp;
+      TCPClient.Port := SocketConnectionPort;
+      TCPClient.Connect;
+    except on E:Exception do
+      System.WriteLn(E.Message);
+    end;
+end;
+
+procedure Disconnect;
+begin
+  if TCPClient.Connected then
+    TCPClient.Disconnect;
+end;
+
+end.

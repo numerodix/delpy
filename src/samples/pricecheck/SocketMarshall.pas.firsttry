@@ -1,0 +1,232 @@
+unit SocketMarshall;
+
+interface
+
+uses
+  SysUtils, Classes, Variants,
+  IdTCPConnection,
+  Core;
+
+
+procedure ReadRecord(const Link: TIdTCPConnection; var rec);
+procedure WriteRecord(const Link: TIdTCPConnection; var rec; len: integer);
+
+procedure ReadObject(const Link: TIdTCPConnection; args: array of Pointer;
+  types: array of boolean); overload;
+procedure ReadObjectZ(const Link: TIdTCPConnection; fst: Pointer; snd: Pointer); overload;
+procedure ReadObjectZ(const Link: TIdTCPConnection; var fst; var snd); overload;
+procedure ReadObject(const Link: TIdTCPConnection; obj: TCompany); overload;
+procedure WriteObject(const Link: TIdTCPConnection; args: array of Pointer;
+  lengths: array of integer;
+  types: array of boolean); overload;
+procedure WriteObject(const Link: TIdTCPConnection; obj: Core.TCompany); overload;
+
+
+implementation
+
+procedure ReadRecord(const Link: TIdTCPConnection; var rec);
+var
+  memstr: TMemoryStream;
+  sz: integer;
+begin
+  memstr := TMemoryStream.Create;
+  try
+    sz := Link.ReadInteger;
+    Link.ReadStream(memstr, sz);
+    memstr.Position := 0;
+
+    memstr.Read(rec, memstr.Size);
+  finally
+    memstr.Free;
+  end;
+end;
+
+procedure WriteRecord(const Link: TIdTCPConnection; var rec; len: integer);
+var
+  memstr: TMemoryStream;
+begin
+  memstr := TMemoryStream.Create;
+  try
+    memstr.Write(rec, len);
+    memstr.Position := 0;
+    Link.WriteInteger(memstr.Size);
+    Link.OpenWriteBuffer;
+    Link.WriteStream(memstr);
+    Link.CloseWriteBuffer;
+  finally
+    memstr.Free;
+  end;
+end;
+
+
+
+procedure ReadObject(const Link: TIdTCPConnection; args: array of Pointer;
+  types: array of boolean);
+var
+  memstr: TMemoryStream;
+  sz: integer;
+  i: integer;
+  len: integer;
+begin
+  memstr := TMemoryStream.Create;
+  try
+    sz := Link.ReadInteger;
+    Link.ReadStream(memstr, sz);
+    memstr.Position := 0;
+
+    for i := Low(args) to High(args) do
+      begin
+        memstr.Read(len, SizeOf(len));
+        if types[i] then
+          begin
+            SetLength(string(args[i]^), len);
+            memstr.Read(Pointer(string(args[i]^))^, len);
+          end
+        else
+          begin
+            memstr.Read(args[i]^, len);
+          end;
+      end;
+
+{
+    memstr.Read(len1, SizeOf(len1));
+    SetLength(string(args[0]^), len1);
+    memstr.Read(Pointer(string(args[0]^))^, len1);
+    memstr.Read(len2, SizeOf(len2));
+    memstr.Read(args[1]^, len2);
+}
+  finally
+    memstr.Free;
+  end;
+end;
+procedure ReadObjectZ(const Link: TIdTCPConnection; fst: Pointer; snd: Pointer);
+var
+  memstr: TMemoryStream;
+  sz: integer;
+  len1, len2: integer;
+begin
+  memstr := TMemoryStream.Create;
+  try
+    sz := Link.ReadInteger;
+    Link.ReadStream(memstr, sz);
+    memstr.Position := 0;
+
+    memstr.Read(len1, SizeOf(len1));
+    SetLength(string(fst^), len1);
+    memstr.Read(Pointer(string(fst^))^, len1);
+    memstr.Read(len2, SizeOf(len2));
+    memstr.Read(snd^, len2);
+  finally
+    memstr.Free;
+  end;
+end;
+
+procedure ReadObjectZ(const Link: TIdTCPConnection; var fst; var snd);
+var
+  memstr: TMemoryStream;
+  sz: integer;
+  len1, len2: integer;
+begin
+  memstr := TMemoryStream.Create;
+  try
+    sz := Link.ReadInteger;
+    Link.ReadStream(memstr, sz);
+    memstr.Position := 0;
+
+    memstr.Read(len1, SizeOf(len1));
+    SetLength(string(fst), len1);
+    memstr.Read(Pointer(fst)^, len1);
+    memstr.Read(len2, SizeOf(len2));
+    memstr.Read(snd, len2);
+  finally
+    memstr.Free;
+  end;
+end;
+
+procedure ReadObject(const Link: TIdTCPConnection; obj: TCompany);
+var
+  memstr: TMemoryStream;
+  sz: integer;
+  len1, len2: integer;
+begin
+  memstr := TMemoryStream.Create;
+  try
+    sz := Link.ReadInteger;
+    Link.ReadStream(memstr, sz);
+    memstr.Position := 0;
+
+    memstr.Read(len1, SizeOf(len1));
+    SetLength(obj.Name, len1);
+    memstr.Read(Pointer(obj.Name)^, len1);
+    memstr.Read(len2, SizeOf(len2));
+    memstr.Read(obj.Product, len2);
+  finally
+    memstr.Free;
+  end;
+end;
+
+
+procedure WriteObject(const Link: TIdTCPConnection; args: array of Pointer;
+  lengths: array of integer;
+  types: array of boolean);
+var
+  memstr: TMemoryStream;
+  i: integer;
+begin
+  memstr := TMemoryStream.Create;
+  try
+    for i := Low(args) to High(args) do
+      begin
+        memstr.Write(lengths[i], SizeOf(lengths[i]));
+        if types[i] then
+          begin
+            memstr.Write(Pointer(string(args[i]^))^, lengths[i]);
+          end
+        else
+          begin
+            memstr.Write(args[i]^, lengths[i]);
+          end;
+      end;
+
+{
+    len1 := Length(obj.Name);
+    len2 := SizeOf(obj.Product);
+    memstr.Write(len1, SizeOf(len1));
+    memstr.Write(Pointer(obj.Name)^, len1);
+    memstr.Write(len2, SizeOf(len2));
+    memstr.Write(obj.Product, len2);
+}
+    memstr.Position := 0;
+    Link.WriteInteger(memstr.Size);
+    Link.OpenWriteBuffer;
+    Link.WriteStream(memstr);
+    Link.CloseWriteBuffer;
+  finally
+    memstr.Free;
+  end;
+end;
+
+procedure WriteObject(const Link: TIdTCPConnection; obj: Core.TCompany);
+var
+  memstr: TMemoryStream;
+  len1, len2: integer;
+begin
+  memstr := TMemoryStream.Create;
+  try
+    len1 := Length(obj.Name);
+    len2 := SizeOf(obj.Product);
+    memstr.Write(len1, SizeOf(len1));
+    memstr.Write(Pointer(obj.Name)^, len1);
+    memstr.Write(len2, SizeOf(len2));
+    memstr.Write(obj.Product, len2);
+    memstr.Position := 0;
+    Link.WriteInteger(memstr.Size);
+    Link.OpenWriteBuffer;
+    Link.WriteStream(memstr);
+    Link.CloseWriteBuffer;
+  finally
+    memstr.Free;
+  end;
+end;
+
+end.

@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<PersonalityInfo>
+		<Option>
+			<Option Name="Personality">Default.Personality</Option>
+			<Option Name="ProjectType"></Option>
+			<Option Name="Version">1.0</Option>
+			<Option Name="GUID">{F93E73A5-1EB1-41FA-8054-6608E46AEF77}</Option>
+		</Option>
+	</PersonalityInfo>
+	<Default.Personality>
+		<Projects>
+			<Projects Name="Flagship.exe">Flagship.bdsproj</Projects>
+			<Projects Name="Sideshow.exe">Sideshow.bdsproj</Projects>
+			<Projects Name="Targets">Flagship.exe Sideshow.exe</Projects>
+		</Projects>
+		<Dependencies/>
+	</Default.Personality>
+	<StarTeamAssociation></StarTeamAssociation>
+	<StarTeamNonRelativeFiles></StarTeamNonRelativeFiles>
+</BorlandProject>

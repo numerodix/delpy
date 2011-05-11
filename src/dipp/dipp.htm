@@ -1,0 +1,761 @@
+<HTML>
+<HEAD>
+<TITLE>DIPP - Delphi Inspiration Pascal Preprocessor</TITLE>
+<META http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+</HEAD>
+
+<BODY bgcolor="#FFFFFF">
+<H2>Welcome to DIPP, the <U>D</U>elphi <U>I</U>nspiration <U>P</U>ascal <U>P</U>reprocessor!</H2>
+<TABLE width="100%" cellpadding="4" cellspacing="1">
+  <TR bgcolor="#DDDDDD" align="center"> 
+    <TD><A href="#WhatIsDipp">What is DIPP?</A></TD>
+    <TD><A href="#UsageAndSyntax">Usage and Syntax</A></TD>
+    <TD><A href="#Examples">Examples</A></TD>
+    <TD><A href="#History">History</A></TD>
+    <TD><A href="#Contact">Contact</A></TD>
+  </TR>
+</TABLE>
+<H3><A name="WhatIsDipp"></A>What is DIPP?</H3>
+<P>DIPP is a Pascal Preprocessor. The purpose of DIPP is to manipulate Pascal 
+  source code files.</P>
+<P><B>DIPP can</B></P>
+<UL>
+  <LI>remove comments 
+  <LI>process compiler directives and switches 
+  <LI>remove compiler conditionals by wild card masks 
+  <LI>remove compiler directives by wild card masks 
+  <LI>insert, read, or skip include files by wild card masks 
+  <LI>extract units' interface sections 
+</UL>
+<B>DIPP is useful</B> 
+<UL>
+  <LI>to insert multiple (nested) include files into a single source file 
+  <LI>to simplify debugging by removing unnecessary conditionals 
+  <LI>to prepare your Pascal source code to be shared with 3rd parties 
+  <LI>to target Pascal sources at specific compiler versions for distribution 
+  <LI>to remove conditionals unsupported by some (old) compilers 
+  <LI>to provide 3rd parties with the interface section of precompiled units 
+</UL>
+<P>DIPP is a tiny console application suitable for batch processing. It returns 
+  an exit code &lt;&gt; 0 on error. DIPP reads, processes and writes one file 
+  at a time, performing minimal syntax check as it goes. Output files can then 
+  be passed on to Pascal compilers.</P>
+<H3><A name="UsageAndSyntax"></A>DIPP Usage and Syntax</H3>
+<P>Since DIPP is a console application, you usually run DIPP from the command 
+  line. Open a console window and type <CODE>DIPP</CODE> and press <CODE>Enter</CODE>. 
+  Called without options, DIPP displays its help screen:</P>
+<TABLE width="100%" bgcolor="#000000" border="2" cellpadding="4" cellspacing="0">
+  <TR>
+    <TD> 
+      <PRE><FONT color="#FFFFFF">C:\DIPP&gt;<B>DIPP</B>
+
+The Delphi Inspiration Pascal Preprocessor Version 1.1
+Copyright (c) 2003 The Delphi Inpiration, Ralf Junker
+http://www.zeitungsjunge.de/delphi/
+
+Syntax: DIPP.exe [options] &lt;INFILE&gt; &lt;OUTFILE&gt;
+
+ -$[&lt;+|-&gt;&lt;sym&gt;[;&lt;sym&gt;]]  Remove directives / keep/remove by wildcards
+ -ai[&lt;file&gt;[;&lt;file&gt;]]    Add / insert include files [specific files]
+ -C[1]                   Remove comments [but keep 1st comment]
+ -c                      Process Conditionals
+ -d&lt;sym&gt;[;&lt;sym&gt;]         Define conditionals
+ -h[&lt;+|-&gt;&lt;sym&gt;[;&lt;sym&gt;]]  Remove conditionals / keep/remove by wildcards
+ -i&lt;path&gt;[;&lt;path&gt;]       Include directories
+ -n                      Interface only (up to implementation identifier)
+ -o                      Overwrite existing file
+ -p&lt;Pascal compiler&gt;     Imitate Pascal compiler conditional defines:
+                           Delphi:     D, D32, D1-7
+                           Kylix:      K, K1-3
+                           C++Builder: C, C32, C1, C3-6
+ -ri[&lt;FILE&gt;[;&lt;FILE&gt;]]    Read Include files [specific files]
+ -si[&lt;FILE&gt;[;&lt;FILE&gt;]]    Skip Include files [specific files]
+ -t[i]                   Time stamp outfile to infile [or latest include]</FONT></PRE>
+    </TD>
+  </TR>
+</TABLE>
+<P>Preprocessing Pascal files with DIPP requires you to enter both an input file 
+  and an output file. DIPP reads from the input file and writes the processed 
+  Pascal source code to the output file:</P>
+<TABLE width="100%" bgcolor="#000000" border="2" cellpadding="4" cellspacing="0">
+  <TR> 
+    <TD>
+      <PRE><FONT color="#FFFFFF">C:\DIPP&gt;<B>DIPP infile.pas outfile.pas</B>
+
+The Delphi Inspiration Pascal Preprocessor Version 1.1
+Copyright (c) 2003 The Delphi Inpiration, Ralf Junker
+http://www.zeitungsjunge.de/delphi/
+In:  infile.pas
+Out: outfile.pas
+  Processed 6523 lines in 10 ms.</FONT></PRE>
+    </TD>
+  </TR>
+</TABLE>
+<P>Without options, DIPP doesn't really process infile.pas except for some minor 
+  formatting like removing multiple line breaks. To turn on real preprocessing, 
+  you need to specify one or more of the following options:</P>
+<TABLE width="100%" cellpadding="4" cellspacing="1">
+  <TR> 
+    <TD valign="top" bgcolor="#DDDDDD" nowrap><B><CODE>-$</CODE></B></TD>
+    <TD bgcolor="#DDDDDD"> 
+      <P><B>Remove Compiler Directives</B></P>
+      <TABLE width="100%" cellpadding="2" cellspacing="1">
+        <TR> 
+          <TD colspan="2">Removing compiler directives can be used to adjust Pascal 
+            sources to older compilers which do not support all directives of 
+            the latest Pascal versions. Directives do not include conditionals 
+            and switches.<BR>
+            <BR>
+          </TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD nowrap valign="top"><CODE>-$</CODE></TD>
+          <TD>Removes all compiler directives. </TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD nowrap valign="top"><CODE>-$-HPPEMIT</CODE></TD>
+          <TD>Removes <CODE>{$HPPEMIT ...}</CODE> directives only.</TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD nowrap valign="top"><CODE>-$+HINT</CODE></TD>
+          <TD>Removes all directives except for <CODE>{$HINT ...}</CODE>.</TD>
+        </TR>
+        <TR> 
+          <TD colspan="2"> <BR>
+            Multiple directives can be separated by semicolon <CODE>';'</CODE>:<BR>
+            <BR>
+          </TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD valign="top" nowrap><CODE>-$-HPPEMIT;NODEFINE&nbsp;</CODE></TD>
+          <TD>Removes <CODE>{$HPPEMIT ...}</CODE> and <CODE>{$NODEFINE ...}</CODE> 
+            directives only.</TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD valign="top" nowrap><CODE>-$+HINT;WARN</CODE></TD>
+          <TD>Removes all directives except for <CODE>{$HINT ...}</CODE> and <CODE>{$WARN 
+            ...}</CODE>.</TD>
+        </TR>
+        <TR> 
+          <TD colspan="2"> 
+            <P><BR>
+              Directive names can also contain wildcards <CODE>'*'</CODE> and 
+              <CODE>'?'</CODE>. Wildcards allow to remove groups of directives 
+              with start or end with particular characters.<BR>
+              <BR>
+            </P>
+          </TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD valign="top" nowrap><CODE>-$-HPP*;*DEFINE</CODE></TD>
+          <TD>Removes only those directives which start with <CODE>'HPP'</CODE> 
+            or end with <CODE>'DEFINE'</CODE>.</TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD valign="top" nowrap><CODE>-$+HPP*;*DEFINE</CODE></TD>
+          <TD>Removes all directives which do not start with <CODE>'HPP'</CODE> 
+            or end with <CODE>'DEFINE'</CODE>.</TD>
+        </TR>
+      </TABLE>
+    </TD>
+  </TR>
+  <TR> 
+    <TD valign="top" nowrap bgcolor="#EEEEEE"><B><CODE><A name="ProcessConditionals"></A>-c</CODE></B></TD>
+    <TD bgcolor="#EEEEEE"> 
+      <P><B>Process Conditionals</B></P>
+      <TABLE width="100%" cellpadding="2" cellspacing="1">
+        <TR> 
+          <TD colspan="2"> 
+            <P>Enables processing of conditional compiler directives. With conditionals 
+              enabled, DIPP skips over code enclosed by undefined conditionals, 
+              inserts include files depending on defined conditionals. In other 
+              words: DIPP treats your sources like a Pascal compiler would.</P>
+            <P>Conditional directives include:</P>
+            <UL>
+              <LI><CODE>{$DEFINE ... }</CODE></LI>
+              <LI><CODE> {$UNDEF ... }</CODE></LI>
+              <LI><CODE>{$IFDEF ... } </CODE></LI>
+              <LI><CODE>{$IFNDEF ... }</CODE></LI>
+              <LI><CODE>{$ELSE ... } </CODE></LI>
+              <LI><CODE>{$IFOPT ... }</CODE></LI>
+            </UL>
+            <P>Do not confuse <CODE>-c</CODE> (lower case) with the <CODE>-C</CODE> 
+              (upper case) option, which remove comments.</P>
+          </TD>
+        </TR>
+      </TABLE>
+    </TD>
+  </TR>
+  <TR bgcolor="#DDDDDD"> 
+    <TD valign="top" nowrap><B><CODE>-C</CODE></B></TD>
+    <TD> 
+      <P><B>Remove Comments </B></P>
+      <TABLE width="100%" cellpadding="2" cellspacing="1">
+        <TR bgcolor="#FFFFEE"> 
+          <TD nowrap valign="top"><CODE>-C</CODE></TD>
+          <TD>Removes all comments. </TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD nowrap valign="top"><CODE>-C1&nbsp;</CODE></TD>
+          <TD>Removes all comments but keeps the 1st comment in the file. This 
+            can be used to keep an initial copyright or license comment present 
+            in many Pascal source code files.</TD>
+        </TR>
+        <TR> 
+          <TD colspan="2"> <BR>
+            Do not confuse <CODE>-C</CODE> (upper case) with the <CODE>-c</CODE> 
+            (lower case) option, which enables processing conditionals. </TD>
+        </TR>
+      </TABLE>
+    </TD>
+  </TR>
+  <TR bgcolor="#EEEEEE"> 
+    <TD valign="top" nowrap><B><CODE>-d</CODE></B></TD>
+    <TD> 
+      <P><B>Define Conditionals</B></P>
+      <TABLE width="100%" cellpadding="2" cellspacing="1">
+        <TR> 
+          <TD colspan="2">Defines conditional symbols, just like the DCC32 command 
+            line compiler. Separate multiple defines with a semicolon <CODE>';'</CODE>.<BR>
+            <BR>
+          </TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD nowrap valign="top"><CODE>-DDebug</CODE></TD>
+          <TD>Defines the conditional symbol <CODE>'Debug'</CODE>.</TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD nowrap valign="top"><CODE>-DDebug;Console&nbsp;</CODE></TD>
+          <TD>Defines the conditional symbols <CODE>'Debug'</CODE> and <CODE>'Console'</CODE>.</TD>
+        </TR>
+      </TABLE>
+    </TD>
+  </TR>
+  <TR> 
+    <TD valign="top" bgcolor="#DDDDDD" nowrap><B><CODE>-h</CODE></B></TD>
+    <TD bgcolor="#DDDDDD"> 
+      <P><B>Remove Conditionals</B></P>
+      <TABLE width="100%" cellpadding="2" cellspacing="1">
+        <TR> 
+          <TD colspan="2">Removing compiler directives from Pascal sources can 
+            be used to clean them up for easier debugging or to create sources 
+            for specific Pascal compilers. Conditionals do not include directives 
+            and switches.<BR>
+            <BR>
+          </TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD valign="top" nowrap><CODE>-H</CODE></TD>
+          <TD>Removes all conditional directives. </TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD valign="top" nowrap><CODE>-H-Debug</CODE></TD>
+          <TD>Removes 'Debug' conditionals only.</TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD valign="top" nowrap><CODE>-H+Debug</CODE></TD>
+          <TD>Removes all conditionals except <CODE>for 'Debug'</CODE>. </TD>
+        </TR>
+        <TR> 
+          <TD colspan="2"> <BR>
+            Multiple directives can be separated by semicolon <CODE>';'</CODE>:<BR>
+            <BR>
+          </TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD valign="top" nowrap><CODE>-H-Debug;Console&nbsp;</CODE></TD>
+          <TD>Removes <CODE>'Debug'</CODE> and <CODE>'Console'</CODE> conditionals 
+            only.</TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD valign="top" nowrap><CODE>-H+Debug;Console</CODE></TD>
+          <TD>Removes all conditionals except for <CODE>'Debug'</CODE> and <CODE>'Console'</CODE>.</TD>
+        </TR>
+        <TR> 
+          <TD colspan="2"> 
+            <P><BR>
+              Directive names can also contain wildcards <CODE>'*'</CODE> and 
+              <CODE>'?'</CODE>. Wildcards allow to remove groups of conditionals 
+              with start or end with particular characters.<BR>
+              <BR>
+            </P>
+          </TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD valign="top" nowrap><CODE>-H-MyID_*</CODE></TD>
+          <TD>Removes all conditionals starting with <CODE>'MyID_'</CODE>.</TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD valign="top" nowrap><CODE>-H+MyID_*</CODE></TD>
+          <TD>Removes all conditionals not starting with <CODE>'MyID_'</CODE>.</TD>
+        </TR>
+      </TABLE>
+    </TD>
+  </TR>
+  <TR bgcolor="#EEEEEE"> 
+    <TD valign="top" nowrap><CODE><B><A name="IncludeDirectories"></A>-i</B></CODE></TD>
+    <TD> 
+      <P><B>Include Directories</B></P>
+      <TABLE width="100%" cellpadding="2" cellspacing="1">
+        <TR> 
+          <TD colspan="2">The <CODE>-I</CODE> option lets you specify a list of 
+            directories in which DIPP searches for include files. Separate multiple 
+            defines with a semicolon <CODE>';'</CODE>. DIPP starts searching for 
+            include files at the current directory, then at the first directory 
+            sepcified, then the 2nd, and so on.<BR>
+            <BR>
+          </TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD nowrap valign="top"><CODE>-Ic:\pascal\include&nbsp;</CODE></TD>
+          <TD nowrap>Searches for include files in <CODE>'c:\pascal\include'</CODE>.</TD>
+        </TR>
+      </TABLE>
+    </TD>
+  </TR>
+  <TR bgcolor="#DDDDDD">
+    <TD valign="top" nowrap><CODE><B>-n</B></CODE></TD>
+    <TD bgcolor="#DDDDDD"> 
+      <P><B>Interface Only</B></P>
+      <TABLE width="100%" cellpadding="2" cellspacing="1">
+        <TR bgcolor="#FFFFEE"> 
+          <TD nowrap valign="top"><CODE>-n&nbsp;</CODE></TD>
+          <TD>Outputs the interface part of a Pascal unit only. The implementation 
+            part will not be included.</TD>
+        </TR>
+      </TABLE>
+    </TD>
+  </TR>
+  <TR bgcolor="#EEEEEE"> 
+    <TD valign="top" nowrap><CODE><B>-p</B></CODE></TD>
+    <TD> 
+      <P><B>Pascal Compiler</B></P>
+      <TABLE width="100%" cellpadding="2" cellspacing="1">
+        <TR> 
+          <TD colspan="2">Causes DIPP to imitate a particular Pascal compiler 
+            by setting and selected conditional compiler symbols.<BR>
+            <BR>
+          </TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD nowrap valign="top"><CODE>-PD6</CODE></TD>
+          <TD>DIPP imitates Delphi 6.</TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD nowrap valign="top"><CODE>-PD32&nbsp;</CODE></TD>
+          <TD>DIPP imitates a general Delphi 32 compiler.</TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD nowrap valign="top"><CODE>-PK2</CODE></TD>
+          <TD>DIPP imitates Kylix 2.</TD>
+        </TR>
+      </TABLE>
+    </TD>
+  </TR>
+  <TR bgcolor="#DDDDDD"> 
+    <TD valign="top" nowrap><CODE><B><A name="InsertIncludes"></A>-ai</B></CODE></TD>
+    <TD> 
+      <P><B>Add / Insert Include Files</B></P>
+      <TABLE width="100%" cellpadding="2" cellspacing="1">
+        <TR> 
+          <TD colspan="2"> <CODE>-ai</CODE> is one of the options to specify handling 
+            of include files. <CODE>-ai</CODE> causes DIPP to insert all include 
+            files into the output file. If enabled, DIPP <A href="#ProcessConditionals">processes 
+            conditionals</A> for all inserted include files.<BR>
+            <BR>
+          </TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD nowrap valign="top"><CODE>-ai</CODE></TD>
+          <TD>Inserts all include files.</TD>
+        </TR>
+        <TR> 
+          <TD colspan="2" valign="top"><BR>
+            You can fine-tune the -ai option by appending one or multipe file 
+            names, separated by semicolon <CODE>';'</CODE>, which instructs DIPP 
+            to insert only those include files specified. Include file names may 
+            contain wildcards.<BR>
+            <BR>
+          </TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD nowrap valign="top"><CODE>-aiSymbols.inc</CODE></TD>
+          <TD>Inserts the include file <CODE>'Symbols.inc'</CODE> only.</TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD nowrap valign="top"><CODE>-aiSymbols.inc;abc*.inc&nbsp;</CODE></TD>
+          <TD>Inserts the include file <CODE>'Symbols.inc'</CODE> plus all file 
+            matching the wildcard <CODE>'abc*.inc'</CODE>.</TD>
+        </TR>
+        <TR> 
+          <TD colspan="2" valign="top"><BR>
+            If DIPP can not find an include file and open it for reading, it will 
+            terminated with an error. To solve the problem, set the <A href="#IncludeDirectories">include 
+            directories</A>.</TD>
+        </TR>
+      </TABLE>
+    </TD>
+  </TR>
+  <TR bgcolor="#EEEEEE"> 
+    <TD valign="top" nowrap><CODE><B><A name="ReadIncludes"></A>-ri</B></CODE></TD>
+    <TD> 
+      <P><B>Read Include Files</B></P>
+      <TABLE width="100%" cellpadding="2" cellspacing="1">
+        <TR> 
+          <TD colspan="2"> <CODE>-ri</CODE> causes DIPP to read the contents of. 
+            If enabled, DIPP <A href="#ProcessConditionals">processes conditionals</A> 
+            for all include files which DIPP reads. However, simply reading will 
+            not <A href="#InsertIncludes">insert the include files' contents</A> 
+            into the output file.<BR>
+            <BR>
+          </TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD nowrap valign="top"><CODE>-ri</CODE></TD>
+          <TD>Reads all include files.</TD>
+        </TR>
+        <TR> 
+          <TD colspan="2" valign="top"><BR>
+            You can fine-tune the <CODE>-ri</CODE> option by appending one or 
+            multipe file names, separated by semicolon <CODE>';'</CODE>, which 
+            instructs DIPP to read only those include files specified. Include 
+            file names may contain wildcards.<BR>
+            <BR>
+          </TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD nowrap valign="top"><CODE>-aiSymbols.inc</CODE></TD>
+          <TD>Reads the include file <CODE>'Symbols.inc'</CODE> only.</TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD nowrap valign="top"><CODE>-aiSymbols.inc;abc*.inc&nbsp;</CODE></TD>
+          <TD>Reads the include file <CODE>'Symbols.inc'</CODE> plus all file 
+            matching the wildcard <CODE>'abc*.inc'</CODE>.</TD>
+        </TR>
+        <TR> 
+          <TD colspan="2" valign="top"><BR>
+            If DIPP can not find an include file and open it for reading, it will 
+            terminated with an error. To solve the problem, set the <A href="#IncludeDirectories">include 
+            directories</A>.</TD>
+        </TR>
+      </TABLE>
+    </TD>
+  </TR>
+  <TR bgcolor="#DDDDDD"> 
+    <TD valign="top" nowrap><CODE><B>-si</B></CODE></TD>
+    <TD> 
+      <P><B>Skip Include Files</B></P>
+      <TABLE width="100%" cellpadding="2" cellspacing="1">
+        <TR> 
+          <TD colspan="2"> <CODE>-si</CODE> causes DIPP to skip all include files. 
+            <BR>
+            <BR>
+          </TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD nowrap valign="top"><CODE>-ri</CODE></TD>
+          <TD>Skips all include files.</TD>
+        </TR>
+        <TR> 
+          <TD colspan="2" valign="top"><BR>
+            You can fine-tune the <CODE>-si</CODE> option by appending one or 
+            multipe file names, separated by semicolon <CODE>';'</CODE>, which 
+            instructs DIPP to skip only those include files specified. Include 
+            file names may contain wildcards.<BR>
+            <BR>
+          </TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD nowrap valign="top"><CODE>-aiSymbols.inc</CODE></TD>
+          <TD>Skips the include file <CODE>'Symbols.inc'</CODE> only.</TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD nowrap valign="top"><CODE>-aiSymbols.inc;abc*.inc&nbsp;</CODE></TD>
+          <TD>Skips the include file <CODE>'Symbols.inc'</CODE> plus all file 
+            matching the wildcard <CODE>'abc*.inc'</CODE>.</TD>
+        </TR>
+        <TR> 
+          <TD colspan="2" valign="top"><BR>
+            Skipping an include file does not require DIPP to be able to locate 
+            it and open it for reading. </TD>
+        </TR>
+      </TABLE>
+    </TD>
+  </TR>
+  <TR bgcolor="#EEEEEE"> 
+    <TD valign="top" nowrap><CODE><B>-t</B></CODE></TD>
+    <TD> 
+      <P><B>Time Stamp Output File</B></P>
+      <TABLE width="100%" cellpadding="2" cellspacing="1">
+        <TR> 
+          <TD colspan="2"> The <CODE>-t</CODE> option instructs DIPP to set the 
+            time stamp of the output file to that of the input file.<BR>
+            <BR>
+          </TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD nowrap valign="top"><CODE>-t</CODE></TD>
+          <TD>Time stamp output file to input file.</TD>
+        </TR>
+        <TR> 
+          <TD colspan="2" valign="top"><BR>
+            With the additional option <CODE>-ti</CODE>, DIPP calculates the new 
+            timestamp from the input file as well as all include files <A href="#InsertIncludes">inserted</A> 
+            and <A href="#ReadIncludes">read</A>.<BR>
+            <BR>
+          </TD>
+        </TR>
+        <TR bgcolor="#FFFFEE"> 
+          <TD nowrap valign="top"><CODE>-ti&nbsp;</CODE></TD>
+          <TD>Time stamp output file to the latest of time of input file or include 
+            files. </TD>
+        </TR>
+      </TABLE>
+    </TD>
+  </TR>
+</TABLE>
+<H3><A name="Examples"></A>DIPP Examples</H3>
+<P>The following example file contains comments, conditional defines, compiler 
+  directives and an implementation section. Let's see how we can use DIPP to modify 
+  it. </P>
+<TABLE width="100%" cellpadding="4" cellspacing="1" bgcolor="#DDDDDD">
+  <TR bgcolor="#FFFFEE"> 
+    <TD> 
+      <PRE>
+<FONT color="#000080"><I>{ Copyright (c) 2003 The Delphi Inspiration, Ralf Junker }
+
+{ This is a test unit for DIPP. }
+</I></FONT><B>unit </B>Test;
+
+<FONT color="#006600"><I>{$HPPEMIT '#include "common.h"'}
+{$IMAGEBASE $00400000}
+</I></FONT>
+<B>interface
+
+</B><FONT color="#006600"><I>{$IFDEF MSWINDOWS}
+</I></FONT><B>const
+  </B>OS = <FONT color="#800000">'MS Windows'</FONT>;
+<FONT color="#006600"><I>{$ENDIF}
+
+{$IFDEF LINUX}
+</I></FONT><B>const
+  </B>OS = <FONT color="#800000">'Linux'</FONT>;
+<FONT color="#006600"><I>{$ENDIF}
+
+</I></FONT><B>implementation
+
+</B><FONT color="#006600"><I>{$IFDEF Debug}
+</I></FONT><B>initialization
+  </B>WriteLn(<FONT color="#800000">'!!! Debug Mode !!!'</FONT>);
+<FONT color="#006600"><I>{$ENDIF}
+
+</I></FONT><B>end</B>.</PRE>
+    </TD>
+  </TR>
+</TABLE>
+<P>Removing all comments, the file looks like:</P>
+<TABLE width="100%" bgcolor="#000000" border="2" cellpadding="4" cellspacing="0">
+  <TR><TD><PRE><FONT color="#FFFFFF">C:\DIPP&gt;<B>DIPP -C test.pas out.pas</B></FONT></PRE></TD></TR>
+</TABLE>
+<TABLE width="100%" cellpadding="4" cellspacing="1" bgcolor="#DDDDDD">
+  <TR bgcolor="#FFFFEE"> 
+    <TD> 
+      <PRE><B>unit </B>Test;
+
+<FONT color="#006600"><I>{$HPPEMIT '#include "common.h"'}
+{$IMAGEBASE $00400000}
+</I></FONT>
+<B>interface
+
+</B>&lt;SNIP&gt;</PRE>
+    </TD>
+  </TR>
+</TABLE>
+<P>Removing all but the 1st comment, the file looks like:</P>
+<TABLE width="100%" bgcolor="#000000" border="2" cellpadding="4" cellspacing="0">
+  <TR> 
+    <TD> 
+      <PRE><FONT color="#FFFFFF">C:\DIPP&gt;<B>DIPP -C1 test.pas out.pas</B></FONT></PRE>
+    </TD>
+  </TR>
+</TABLE>
+<TABLE width="100%" cellpadding="4" cellspacing="1" bgcolor="#DDDDDD">
+  <TR bgcolor="#FFFFEE"> 
+    <TD> 
+      <PRE>
+<FONT color="#000080"><I>{ Copyright (c) 2003 The Delphi Inspiration, Ralf Junker }
+
+</I></FONT><B>unit </B>Test;
+
+<FONT color="#006600"><I>{$HPPEMIT '#include "common.h"'}
+{$IMAGEBASE $00400000}
+</I></FONT>
+<B>interface
+
+</B>&lt;SNIP&gt;</PRE>
+    </TD>
+  </TR>
+</TABLE>
+<P>This will remove all comments but the 1st, and also remove the <CODE>{$HPPEMIT 
+  ... }</CODE> compiler directive.</P>
+<TABLE width="100%" bgcolor="#000000" border="2" cellpadding="4" cellspacing="0">
+  <TR> 
+    <TD> 
+      <PRE><FONT color="#FFFFFF">C:\DIPP&gt;<B>DIPP -C1 -$-HPPEMIT test.pas out.pas</B></FONT></PRE>
+    </TD>
+  </TR>
+</TABLE>
+<TABLE width="100%" cellpadding="4" cellspacing="1" bgcolor="#DDDDDD">
+  <TR bgcolor="#FFFFEE"> 
+    <TD> 
+      <PRE>
+<FONT color="#000080"><I>{ Copyright (c) 2003 The Delphi Inspiration, Ralf Junker }
+
+</I></FONT><B>unit </B>Test;
+
+<FONT color="#006600"><I>{$IMAGEBASE $00400000}
+</I></FONT>
+<B>interface
+
+</B>&lt;SNIP&gt;</PRE>
+    </TD>
+  </TR>
+</TABLE>
+<P>Next we want to remove all comments (<CODE>-C</CODE>) and all compiler directives 
+  (<CODE>-$</CODE>). We also want to remove all conditionals (<CODE>-h</CODE>), 
+  so we also enable processing of conditionals (<CODE>-c</CODE><CODE>)</CODE>. 
+  Let's see what's left, if no conditional symbols are defined:</P>
+<TABLE width="100%" bgcolor="#000000" border="2" cellpadding="4" cellspacing="0">
+  <TR> 
+    <TD> 
+      <PRE><FONT color="#FFFFFF">C:\DIPP&gt;<B>DIPP -C -$ -h -c test.pas out.pas</B></FONT></PRE>
+    </TD>
+  </TR>
+</TABLE>
+<TABLE width="100%" cellpadding="4" cellspacing="1" bgcolor="#DDDDDD">
+  <TR bgcolor="#FFFFEE"> 
+    <TD> 
+      <PRE><B>unit </B>Test;
+
+<B>interface
+
+</B><B>implementation
+
+</B><B>end</B>.</PRE>
+    </TD>
+  </TR>
+</TABLE>
+<P>Why is the file almost empty? DIPP does, by default, not know about the Pascal 
+  compiler. Imitating Delphi 6 (<CODE>-pD6</CODE>) defines the <CODE>MSWINDOWS</CODE> 
+  conditional symbol and DIPP outputs the following:</P>
+<TABLE width="100%" bgcolor="#000000" border="2" cellpadding="4" cellspacing="0">
+  <TR> 
+    <TD> 
+      <PRE><FONT color="#FFFFFF">C:\DIPP&gt;<B>DIPP -C -$ -h -c -pD6 test.pas out.pas</B></FONT></PRE>
+    </TD>
+  </TR>
+</TABLE>
+<TABLE width="100%" cellpadding="4" cellspacing="1" bgcolor="#DDDDDD">
+  <TR bgcolor="#FFFFEE"> 
+    <TD> 
+      <PRE><B>unit </B>Test;
+
+<B>interface
+</B>
+<B>const
+  </B>OS = <FONT color="#800000">'MS Windows'</FONT>;<B>
+</B>
+<B>implementation
+
+end</B>.</PRE>
+    </TD>
+  </TR>
+</TABLE>
+<P>Now imagine creating a Debug build by defining the <CODE>Debug</CODE> conditional 
+  symbol at the command prompt with <CODE>-DDebug</CODE>:</P>
+<TABLE width="100%" bgcolor="#000000" border="2" cellpadding="4" cellspacing="0">
+  <TR> 
+    <TD> 
+      <PRE><FONT color="#FFFFFF">C:\DIPP&gt;<B>DIPP -C -$ -h -c -pD6 -DDebug test.pas out.pas</B></FONT></PRE>
+    </TD>
+  </TR>
+</TABLE>
+<TABLE width="100%" cellpadding="4" cellspacing="1" bgcolor="#DDDDDD">
+  <TR bgcolor="#FFFFEE"> 
+    <TD> 
+      <PRE><B>unit </B>Test;
+
+<B>interface
+</B>
+<B>const
+  </B>OS = <FONT color="#800000">'MS Windows'</FONT>;<B>
+</B>
+<B>implementation
+</B>
+<B>initialization
+  </B>WriteLn(<FONT color="#800000">'!!! Debug Mode !!!'</FONT>);
+
+<B>end</B>.</PRE>
+    </TD>
+  </TR>
+</TABLE>
+<P>Last but not least, we will create an interface file for Kylix (<CODE>-pK</CODE>) 
+  with all comments after the 1st and all conditionals removed. We will, however, 
+  not remove the compiler directives:</P>
+<TABLE width="100%" bgcolor="#000000" border="2" cellpadding="4" cellspacing="0">
+  <TR> 
+    <TD> 
+      <PRE><FONT color="#FFFFFF">C:\DIPP&gt;<B>DIPP -C1 -h -c -pK test.pas out.pas</B></FONT></PRE>
+    </TD>
+  </TR>
+</TABLE>
+<TABLE width="100%" cellpadding="4" cellspacing="1" bgcolor="#DDDDDD">
+  <TR bgcolor="#FFFFEE"> 
+    <TD> 
+      <PRE><FONT color="#000080"><I>{ Copyright (c) 2003 The Delphi Inspiration, Ralf Junker }</I></FONT>
+
+<B>unit </B>Test;
+
+<FONT color="#006600"><I>{$HPPEMIT '#include "common.h"'}
+{$IMAGEBASE $00400000}
+</I></FONT>
+<B>interface
+</B>
+<B>const
+  </B>OS = <FONT color="#800000">'Linux'</FONT>;<B>
+</B>
+<B>implementation</B></PRE>
+    </TD>
+  </TR>
+</TABLE>
+<H3><A name="History"></A>DIPP History</H3>
+<H4>DIPP 1.2</H4>
+<UL>
+  <LI>Added recognition of recursive include files to prevent indefinite loops.</LI>
+  <LI>Added <CODE>'.pas'</CODE> default extension for include files with no extension 
+    specified.</LI>
+  <LI><CODE>{$IFNDEF ...}</CODE> compiler directive was not negated. Fixed.</LI>
+</UL>
+<HR noshade size="1">
+<H4>DIPP 1.1</H4>
+<UL>
+  <LI>Added <CODE>-$</CODE> remove directives option.</LI>
+  <LI>Added <CODE>-n</CODE> interface only option.</LI>
+  <LI>Added <CODE>-o</CODE> overwrite existing file option. Changed the default 
+    not to overwrite an existing file.</LI>
+  <LI>Added <CODE>-p</CODE> Pascal compiler option.</LI>
+  <LI>Added <CODE>-t</CODE> time stamp option.</LI>
+  <LI>Added processing of compiler switches.</LI>
+  <LI>Added Help file.</LI>
+  <LI>Bug fixes.</LI>
+</UL>
+<HR noshade size="1">
+<H4> DIPP 1.0</H4>
+<P>Initial, limited release. </P>
+<H3><A name="Contact"></A>Contact</H3>
+<P>DIPP is Copyright (c) 2003 The Delphi Inspiration, Ralf Junker<BR>
+  Internet: <A href="http://www.zeitungsjunge.de/delphi/" target="_blank">http://www.zeitungsjunge.de/delphi/</A><BR>
+  E-Mail: <A href="mailto:delphi@zeitungsjunge.de?subject=DIPP">delphi@zeitungsjunge.de</A> 
+</P>
+</BODY>
+</HTML>

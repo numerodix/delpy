@@ -1,0 +1,21 @@
+<program>
+ <delphi_file><program_file>
+   <program_decl> program
+    <qualified_id>
+     <name><id>Trivial</id></name>
+    </qualified_id> ;
+   </program_decl>
+   <impldecl_block></impldecl_block>
+   <procedure_body><sequence_stm>
+     <commentlist></commentlist> begin
+     <statement_list>
+     </statement_list>
+     <end_struct>
+      <commentlist></commentlist> end
+     </end_struct>
+    </sequence_stm>
+   </procedure_body>
+   <file_end>.</file_end>
+  </program_file>
+ </delphi_file>
+</program>

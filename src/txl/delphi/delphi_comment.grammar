@@ -1,0 +1,50 @@
+% Name:   delphi_comment.grammar
+% Purpose:  TXL Grammar for comments
+% Author:   Jorge L. Cangas
+% Author:   Martin Matusiak
+
+#if not _delphi_comment_overr_grammar_ then
+#define _delphi_comment_overr_grammar_
+
+#pragma -in 2 
+#pragma -comment
+
+define bodyany
+ [key] | [token] 
+end define
+
+define bracketbody
+    [not '} ] [bodyany]
+end define
+
+define starbody
+    [not '*) ] [bodyany]
+end define
+
+define commentblock
+    '{ [repeat bracketbody] '}
+ |  '(* [repeat starbody] '*)
+end define
+
+define directiveblock
+    '{$ [repeat bracketbody] '}
+ |  '(*$ [repeat starbody] '*)
+end define
+
+define commentline
+  [comment]
+end define
+
+define anycomment
+    [commentblock] | [directiveblock] | [commentline]
+end define
+
+define many_comments
+    [repeat anycomment+][NL]
+end define
+
+define commentlist
+    [opt many_comments]
+end define
+
+#end if

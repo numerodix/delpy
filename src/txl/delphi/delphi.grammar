@@ -1,0 +1,1329 @@
+% Name:   delphi.grammar
+% Purpose:  TXL Grammar for Borland Delphi Language
+% Author:   Jorge L. Cangas
+% Author:   Martin Matusiak
+
+#if not _delphi_grammar_ then
+#define _delphi_grammar_
+
+#pragma -case
+#pragma -w 256
+
+compounds
+    :=  >=  <=  <>  (.  .)  {$  (*$  (*   *)  //
+end compounds
+
+tokens
+    charlit "[(\#\d+)(\#$[\dABCDEFabcdef]+)('[('')#']*')]+"
+    hexnumber "$[\dABCDEFabcdef]+" | "0[\dABCDEFabcdef]+H"
+end tokens
+
+comments
+     //
+
+     { }
+     (* *)
+     {$ }
+     (*$ *)
+end comments
+
+keys
+% type
+      'label 'array  'record    'file  'set  'string
+      'class 'object 'interface 'dispinterface 'helper
+% members
+      'property  'constructor  'destructor  'procedure  'function  'operator
+% operators
+      'and 'or 'not 'xor 'div 'mod 'shl 'shr
+      'nil 'is 'as 'in
+%sections
+      'program 'unit 'library
+      'uses 'interface 'implementation 'initialization 'finalization
+      'type  'const 'var 'threadvar 'asm 'resourcestring
+% control 
+      'begin  'end
+      'case   'of
+      'for 'to  'downto
+      'if 'then 'else
+      'until  'repeat
+      'while 'do
+      'try  'finally 'except
+      'goto 'raise
+      'with
+%modifiers
+      'packed  'inherited 'out 'exports 'inline 
+end keys
+
+%------------------------------ common definitions  ------------------------------------------------------
+
+redefine anynumber
+        [hexnumber]
+    |   [number]
+end define
+
+define label_id
+    [anynumber] | [id]
+end define
+
+define builtinid %valid id that is a keyword
+    'string | 'file | 'set | 'goto | 'helper | [id] '. [end_kw]
+end define
+
+define name
+        [builtinid]
+    |   [id]
+end define
+
+define namespace
+    %[SPOFF]
+	[id] '.
+end define
+
+define box_qualified_id
+	[opt qualified_id]
+end define
+define qualified_id
+    [repeat namespace] [name] [SPON]
+end define
+
+define filenamelit
+    [charlit] | [stringlit] | [qualified_id]
+end define
+
+define colon
+    [SPOFF]
+	':
+	[SPON]
+end define
+
+define equal
+    '=
+end define
+
+define begin_kw
+    'begin
+end define
+
+define end_kw
+    [commentlist] 'end
+end define
+
+define many_semi_calling_spec
+	[repeat semi_calling_spec]
+end define
+define box_semi_calling_spec
+	[opt semi_calling_spec]
+end define
+define semi_calling_spec
+        [box_semi] [calling_spec]
+end define
+
+define calling_spec
+    'pascal | 'safecall | 'stdcall | 'cdecl | 'register | 'local | 'experimental
+	| 'inline | 'near
+end define
+
+define box_hint_directive
+    [opt hint_directive]
+end define
+define hint_directive
+     'platform | 'deprecated | 'library
+end define
+
+define uppercasechar
+	  'A | 'B | 'C | 'D | 'E | 'F | 'G | 'H | 'I | 'J | 'K | 'L | 'M | 'N | 'O
+	| 'P | 'Q | 'R | 'S | 'T | 'U | 'V | 'W | 'X | 'Y | 'Z
+end define
+
+define ctrlchar
+	[SPOFF] '^ [uppercasechar] [SPON]
+end define
+
+%----------------------------------    top level - file types  --------------------------------------------
+
+define delphi_file
+      [program_file]
+    | [package_file]
+    | [unit_file]
+end define
+
+define file_end
+    '.
+end define
+
+define program_file % (*.dpr)
+    [program_decl] [NL]
+    [box_uses_clause]
+    [impldecl_block] [NL]
+    [procedure_body]
+    [file_end]
+end define
+
+define package_file % (*.dpk)
+    [package_decl] [NL]
+    [box_requires_clause]
+    [box_contains_clause]
+    [end_kw]
+    [file_end]
+end define
+
+define unit_file % (*.pas)
+    [unit_decl] [NL]
+    [interface_section]
+    [implementation_section] [NL]
+    [box_initialization_section]
+    [box_finalization_section]
+    [end_kw]
+    [file_end]
+end define
+
+define program_decl
+		[program_decl_prog] [NL]
+	|	[program_decl_lib] [NL]
+end define
+
+define program_decl_prog
+	[commentlist] 'program [qualified_id] [box_program_file_list] ';
+end define
+
+define program_decl_lib
+	[commentlist] 'library [qualified_id] ';
+end define
+
+define package_decl
+    'package [qualified_id] ';  [NL]
+end define
+
+define unit_decl
+    [commentlist] 'unit [qualified_id] [box_hint_directive] '; [NL]
+end define
+
+define box_program_file_list
+	[opt program_file_list]
+end define
+define program_file_list
+   '( [list id] ')
+end define
+
+define box_requires_clause
+	[opt requires_clause]
+end define
+define requires_clause
+    'requires [list qualified_id] '; [NL]
+end define
+
+define box_contains_clause
+	[opt contains_clause]
+end define
+define contains_clause
+    'contains [list uses_item] '; [NL]
+end define
+
+define box_uses_clause
+	[opt uses_clause]
+end define
+define uses_clause
+     [commentlist] 'uses [NL] [IN][list uses_item] '; [EX][NL]
+	 [NL]
+end define
+
+define uses_item
+	[commentlist]
+	[qualified_id] [box_in_filename]
+end define
+
+define box_in_filename
+	[opt in_filename]
+end define
+define in_filename
+    'in [filenamelit] [commentlist]
+end define
+
+define initialization_kw
+    [commentlist] 'initialization [NL] | [commentlist] [begin_kw]
+end define
+
+define implementation_kw
+    [commentlist] 'implementation [NL]
+end define
+
+define finalization_kw
+    [commentlist] 'finalization [NL]
+end define
+
+define interface_kw
+    [commentlist] 'interface [NL]
+end define
+
+define interface_section
+    [interface_kw] [NL]
+    [box_uses_clause]
+    [intfdecl_block]
+end define
+
+define implementation_section
+    [implementation_kw] [NL]
+    [box_uses_clause]
+    [impldecl_block]
+end define
+
+define box_initialization_section
+    [opt initialization_section]
+end define
+define initialization_section
+   [initialization_kw]
+   [statement_list] [NL]
+end define
+
+define box_finalization_section
+	[opt finalization_section]
+end define
+define finalization_section
+    [finalization_kw]
+    [statement_list] [NL]
+end define
+
+define intfdecl_block
+    [repeat intfdecl_section]
+end define
+
+define impldecl_block
+    [repeat impldecl_section]
+end define
+
+define nested_decl_block
+    [repeat nested_decl_section]
+end define
+
+%--------------------------   declarations ------------------------------------------------
+
+define identlist
+    [id][repeat comma_id]
+	| [builtinid][repeat comma_id]
+end define
+
+define comma_id
+    ', [NL] 
+    [id]
+end define
+
+define intfdecl_section
+        [const_section]
+    |   [type_section]
+    |   [var_section]
+    |   [label_decl]
+
+    |   [procedure_intf_decl]
+    |   [procedure_impl_decl]
+
+    |   [procedure_external_decl]     
+    |   [resource_section]
+    |   [exports_section]
+end define
+
+define impldecl_section
+        [const_section]
+    |   [type_section]
+    |   [var_section]
+    |   [label_decl]
+
+    |   [procedure_impl_decl]         
+    
+    |   [procedure_external_decl]     
+    |   [resource_section]
+    |   [exports_section]
+
+end define
+
+define nested_decl_section
+        [const_section]
+    |   [type_section]
+    |   [var_section]
+    |   [label_decl]
+
+    |   [nested_procedure_impl_decl]
+end define
+
+define nested_procedure_impl_decl
+	[procedure_impl_decl]
+end define
+
+define label_decl
+    'label [list label_id] '; [NL]
+end define
+
+define exports_section
+	[commentlist]
+    'exports [list exports_entry] '; [NL]
+end define
+
+define exports_entry
+    [procedure_id][box_formal_parameters][opt external_name]
+end define
+
+define resource_section
+	[commentlist]
+    'resourcestring                     
+        [repeat constant_decl+]          
+end define
+
+define const_section
+	[commentlist]
+     'const [NL]                           
+    [IN][repeat constant_decl+][EX]
+end define
+
+define constant_decl
+  [commentlist]
+      [identlist][constant_spec][box_hint_directive]'; 
+end define
+
+define constant_spec
+    [constant_spec_equal]   |  [colon_type][const_init]
+end define
+
+define constant_spec_equal
+    [equal][expr]
+end define
+
+define const_init
+    [equal][typed_const]
+end define
+
+define typed_const
+	[commentlist] [typed_const_inner]
+end define
+define typed_const_inner
+    [array_constant]    |   [record_constant]  |   [expr]
+end define
+
+define array_constant
+    '( [list typed_const]  ')
+end define
+
+define box_record_field_constant
+	[opt record_field_constant]
+end define
+define record_field_constant
+     [id][colon][typed_const]
+end define
+
+define record_constant
+    '( [many_record_field_constant_semi] [box_record_field_constant] ')
+end define
+
+define many_record_field_constant_semi
+	[repeat record_field_constant_semi]
+end define
+define record_field_constant_semi
+    [record_field_constant] '; [NL]
+end define
+
+define var_section
+	[commentlist]
+    [var_keyword][NL]
+    [IN][repeat var_decl+][EX]
+end define
+
+define var_keyword
+    'var   | 'threadvar
+end define
+
+% make trailing semicolon optional:
+%	THeader = packed record
+%		Key: Longint;
+%		Box: record left, top, right, bottom: Word       % <- here
+%		end;
+%		Inch: Word;
+%	end;
+define var_decl
+	[commentlist]
+    [identlist][colon_type][box_hint_directive] [box_var_init] [box_semi] [NL]
+end define
+
+define box_var_init
+	[opt var_init]
+end define
+define var_init
+      [absolute_init]
+    | [const_init]
+end define
+
+define absolute_init
+    'absolute [expr]
+end define
+
+%-----------------------------  Type Declarations   ---------------------------------
+
+define type_section
+    [commentlist] 'type [NL]
+       [IN][repeat type_decl+][EX]
+	[NL]
+end define
+
+define type_decl
+    [commentlist] [identlist][equal][box_type][type_spec][box_hint_directive] '; [NL]
+	[NL]
+end define
+
+define box_type
+	[opt 'type]
+end define
+
+define type_spec
+	[commentlist] [type_spec_inner]
+end define
+define type_spec_inner
+        [simple_type]
+    |   [string_type]
+    |   [struct_type]
+    |   [pointer_type]
+    |   [procedural_type]
+    |   [variant_type]
+    |   [class_reference_type]
+    |   [class_type]
+    |   [interface_type]
+    |   [qualified_id]
+end define
+
+define real_type
+       'real | 'real48 |  'single | 'double | 'extended | 'comp | 'currency
+end define
+
+define integer_type
+      'shortint | 'smallint | 'longint | 'int64 | 'word | 'byte | 'longword
+      | 'integer | 'cardinal
+end define
+
+define char_type
+    'char | 'ansichar | 'widechar
+end define
+
+define boolean_type
+    'boolean | 'bytebool | 'wordbool | 'longbool
+end define
+
+define variant_type
+        'variant | 'olevariant
+end define
+
+define string_type
+    'string | 'shortstring | 'ansistring | 'widestring
+	| 'string '[ [expression] ']
+	| 'string '(. [expression] '.)
+end define
+
+define enumerated_type
+    '( [list enum_spec+] ')
+end define
+
+define enum_spec
+    [commentlist]
+    [id][opt param_init]
+end define
+
+define subrange_type
+    [expression] [SPOFF] [dotdot_expr] [SPON]
+end define
+
+define dotdot_expr
+    '.. [expression]
+end define
+
+define ordinal_type
+        [integer_type] | [char_type]    | [enumerated_type] 
+    |   [boolean_type] | [subrange_type]
+end define
+
+define simple_type
+      [ordinal_type]  | [real_type]
+end define
+
+define struct_type
+        [set_type]
+    |   [array_type]
+    |   [file_type]
+end define
+
+define of_basetype
+    'of [type_spec]
+end define
+
+define box_of_object
+	[opt of_object]
+end define
+define of_object
+    'of 'object
+end define
+
+define of_const
+    'of 'const
+end define
+
+define set_type
+    'set [of_basetype]
+end define
+
+define file_type
+   'file [opt of_basetype]
+end define
+
+define pointer_type
+    '^ [SPOFF] [qualified_id][SPON]
+end define
+
+define procedural_type
+    [procedure_intf_decl][box_of_object][many_semi_calling_spec]
+end define
+
+define colon_type
+    [colon][type_spec]
+end define
+
+define array_type
+        [array_of_const]
+    |   [array_packed]
+end define
+
+define array_of_const
+	'array [of_const]
+end define
+
+define array_packed
+	[box_packed] [SP][SPOFF]'array [many_array_index_list][SPON] [of_basetype]
+end define
+
+define many_array_index_list
+	[repeat array_index_list]
+end define
+define array_index_list
+    '[ [list array_index] ']
+    | '(. [list array_index] '.)
+end define
+
+define array_index
+    [ordinal_type] | [qualified_id]
+end define
+
+define procedure_id
+    [opt namespace][id]
+end define
+
+define procedure_impl_decl
+	[commentlist]
+    [NL]
+    [procedure_intf_decl]
+    [nested_decl_block]
+    [procedure_body_semi]
+end define
+
+define external_directive
+    'external [box_expr] [box_external_name]
+end define
+
+define box_external_name
+	[opt external_name]
+end define
+define external_name
+     'name [expr]
+   | 'index [expr]
+end define
+
+define semi_directive
+    [box_semi][directive]
+end define
+
+define directive
+    [commentlist] [directive_inner]
+end define
+define directive_inner
+      'dynamic | 'virtual | 'abstract | [directive_message]
+    | [directive_dispid]
+    | 'override | 'overload | 'reintroduce | 'static
+    | 'assembler | 'far | 'export
+    | [hint_directive]
+    | [calling_spec]
+    | [directive_message_plus_number]
+end define
+
+define directive_dispid
+    'dispid [box_sign][anynumber]
+end define
+
+define directive_message_plus_number
+    'message [qualified_id] '+ [anynumber] ';
+end define
+
+define directive_message
+	'message [box_qualified_id]
+end define
+
+define procedure_intf_decl
+	[commentlist]
+    [procedure_signature][repeat semi_directive][box_semi] [NL]
+end define
+
+define procedure_signature
+    [box_class][procedure_keyword][box_procedure_id][box_formal_parameters][box_colon_type]
+end define
+
+define box_class
+	[opt 'class]
+end define
+define box_procedure_id
+	[opt procedure_id]
+end define
+define box_formal_parameters
+	[opt formal_parameters]
+end define
+define box_colon_type
+	[opt colon_type]
+end define
+
+define procedure_external_decl
+    [procedure_intf_decl][external_directive][box_semi_calling_spec][box_semi] [NL]
+end define
+
+define procedure_keyword
+        'function 
+    |   'procedure
+    |   'constructor
+    |   'destructor
+    |	'operator
+end define
+
+define formal_parameters
+    '( [formal_parameter][repeat semi_formal_parameter] ')
+end define
+
+define semi_formal_parameter
+    '; [formal_parameter]
+end define
+
+define formal_parameter
+	  [commentlist]
+	  [box_parm_qual] [parameter]
+end define
+
+define box_parm_qual
+	[opt parm_qual]
+end define
+define parm_qual
+    'var | 'const | 'out
+end define
+
+define parameter
+    [list id] [opt parameter_type]
+end define
+
+define parameter_type
+    [colon_type] [opt param_init]
+end define
+
+define param_init
+   [equal][expr]
+end define
+
+define procedure_body_semi
+   [procedure_body] '; [NL]
+end define
+
+define procedure_body
+        [sequence_stm]
+    |   [forward_kw] %forward replaces the body: see Delphi Language Grammar in Help
+end define
+
+define forward_kw
+	'forward
+end define
+
+%---------------------------    class declarations  ------------------------------------
+
+define heritage_list
+    '( [list qualified_id] ')
+    | [heritage_list_helper]
+end define
+
+define heritage_list_helper
+    'helper 'for [id]
+end define
+
+define class_keyword
+    'class | 'record | 'object % object is legacy
+end define
+
+define interface_keyword
+    'interface | 'dispinterface
+end define
+
+define box_guid_decl
+	[opt guid_decl]
+end define
+define guid_decl
+    '[ [expr] ']
+    | '(. [expr] '.)
+end define
+
+define class_reference_type
+    'class 'of [qualified_id]
+end define
+
+define class_type
+    [box_packed] % support record
+    [class_keyword] [box_abstract] [box_heritage_list]
+    [NL][box_class_body] % end can be omited if no members: TDerived = class(TComponent);
+end define
+
+define box_packed
+	[opt 'packed]
+end define
+define box_abstract
+	[opt 'abstract]
+end define
+define box_heritage_list
+	[opt heritage_list]
+end define
+define box_class_body
+	[opt class_body]
+end define
+
+define class_body
+    [visibility_default]
+    [many_visibility_block]
+    [end_kw]
+end define
+
+define box_interface_body
+	[opt interface_body]
+end define
+define interface_body
+    [visibility_default]
+    [end_kw]
+end define
+
+define interface_type
+    [interface_keyword] [box_heritage_list] [box_guid_decl] [NL]
+    [IN][box_interface_body][EX]
+end define
+
+define visibility_default
+    [many_class_member][NL]
+end define
+
+define many_visibility_block
+	[repeat visibility_block]
+end define
+define visibility_block
+    [visibility][NL]
+    [IN][many_class_member][EX]
+end define
+
+define many_class_member
+	[repeat class_member]
+end define
+
+% Reorder bottom two elements to prevent bad parses (first in list is chosen)
+define method_decl
+        [procedure_signature][method_deleg]
+    |   [procedure_intf_decl]
+%    |   [procedure_signature] '; [dispid_spec] ';		% redundant?
+end define
+
+define method_deleg
+    [equal][qualified_id] '; [NL]
+end define
+
+define visibility
+	[commentlist] [visibility_kw]
+end define
+
+define visibility_kw
+        'public
+    |   'protected
+    |   [visibility_kw_strict_private]
+    |   'published
+    |   'automated
+end define
+
+define visibility_kw_strict_private
+    [opt 'strict] 'private
+end define
+
+define variant_section
+    'case [box_id_colon] [type_spec] 'of [repeat record_variant+]
+end define
+
+define box_id_colon
+	[opt id_colon]
+end define
+define id_colon
+    [id] [colon]
+end define
+
+% Allow type declaration in record variants:
+%	case byte of
+%		0:(i : int8array);
+%		1:(s : string[JMSG_STR_PARM_MAX]);
+define record_variant
+	 	[record_variant_comp] [NL]
+	|	[record_variant_int] [NL]
+end define
+
+define record_variant_comp
+	[list expr+] [colon] '( [identlist] [colon] [type_spec]	') [box_semi]
+end define
+
+define record_variant_int
+	[list expr+] [colon] '( [visibility_default]			') [box_semi]
+end define
+
+% Class variable and property:
+%	TJob = class(TJob)
+%	private
+%		class var FOpenAfterCreate: Boolean;
+%	public
+%		class function Execute(const AOnjob: TOnjob): Boolean; overload;
+define class_member
+	[commentlist] [class_member_inner]
+end define
+define class_member_inner
+      [var_decl]
+    | [method_decl]
+    | [property_decl]
+    | [variant_section] %to support record variant type
+    | [class_member_comp]
+    | [const_section]
+end define
+
+define class_member_comp
+    'class 'var [var_decl]
+    | 'class [property_decl]
+end define
+
+% Accept unknown & operator in property declaration:
+%	property &ReadOnly: Boolean read FReadOnly write SetReadOnly;
+define property_decl
+   'property [prop_id] [box_prop_indexes] [box_colon_type] [many_prop_specifier] [box_defaultarray_spec] '; [NL]
+end define
+
+define prop_id
+		[id]
+	|	[SP] [SPOFF] '& [id] [SPON]
+end define
+
+define box_defaultarray_spec
+	[opt defaultarray_spec]
+end define
+define defaultarray_spec
+    '; 'default 
+end define
+
+define box_prop_indexes
+	[opt prop_indexes]
+end define
+define prop_indexes
+    '[ [repeat prop_index_decl+] ']
+    | '(. [repeat prop_index_decl+] '.)
+end define
+
+define prop_index_decl
+    [list prop_index_name+][colon_type][box_semi]
+end define
+
+define box_prop_index_modifier
+	[opt prop_index_modifier]
+end define
+define prop_index_modifier
+        'const   |   'var
+end define
+
+define prop_index_name
+	[box_prop_index_modifier][qualified_id]
+end define
+
+define many_prop_specifier
+	[repeat prop_specifier]
+end define
+define prop_specifier
+      [index_spec]
+    | [accessor_spec]
+    | [stored_spec]
+    | [default_spec]
+    | [implements_spec]
+    | [dispid_spec]
+end define
+
+define dispid_spec
+     'dispid[SP][expr]
+end define
+
+define index_spec
+    'index[SP][expr]
+end define
+
+define accessor_spec
+		[accessor_verb_only]
+    |   [accessor_verb_id]
+end define
+
+define accessor_verb_only
+        'readonly
+    |   'writeonly
+end define
+
+define accessor_verb_id
+	[commentlist]
+    [accessor_verb] [qualified_id]
+end define
+
+define accessor_verb
+        'read | 'write
+end define
+
+define stored_spec
+        'stored[SP][expr]
+end define
+
+define default_spec
+        'default[SP][expr]    |   'nodefault
+end define
+
+define implements_spec
+        'implements [list qualified_id]
+end define
+
+%----------------------------   Expressions ----------------------------------------
+
+define box_expr
+	[opt expr]
+end define
+define expr
+ 	[SP][SPOFF]	[expression] [SPON]
+end define
+
+define expression
+    [term] [repeat infix_expr]
+end define
+
+% Add & as prefix operator:
+%	System.Move(&Holder, Data[0], 2);
+define term
+    [commentlist]
+    [SPOFF] [repeat prefix_opr][atom_expr][repeat postfix_opr] [SPON]
+end define
+
+define infix_expr
+    [SP][infix_opr][SP][term]        
+end define
+
+define atom_expr
+        [charlit]
+    |   [anynumber]
+    |   [ctrlchar]
+    |   'nil
+    |   '([expression]')
+    |   [set_constructor]
+    |   [qualified_id] 
+end define
+
+define box_sign
+	[opt sign]
+end define
+define sign
+    '+ | '-
+end define
+
+define prefix_opr
+	  [prefix_opr_spaced]
+    |  '@
+    | [sign]
+    | '&
+end define
+
+define prefix_opr_spaced
+		'not [SP]
+    |	'inherited [SP]
+end define
+
+define postfix_opr        
+        [arguments]
+    |   [array_subscript]
+    |   '.[id]  % for member access: prec^.fields[2]
+    |   '^
+end define
+
+define infix_opr
+        % relation
+        '> |  '< | '<= | '>= | '<> | '= | 'in |'is | 'as
+        % add
+    |   '+ | '- | 'or | 'xor
+        % mul
+    |   '* | '/ | 'div | 'mod | 'and | 'shl | 'shr | '^
+end define
+
+define set_constructor
+    '[ [box_set_element][many_comma_set_element] '] %don't use list: allow pretty format
+    | '(. [box_set_element][many_comma_set_element] '.)
+end define
+
+define arguments
+   '( [opt argm][repeat comma_argm] ') %don't use list: allow pretty format
+end define
+
+define array_subscript
+   '[ [opt expression][repeat comma_expression] '] %don't use list: allow pretty format
+   | '(. [opt expression][repeat comma_expression] '.)
+end define
+
+define comma_argm
+    ', [SP][argm]
+end define
+
+define many_comma_set_element
+	[repeat comma_set_element]
+end define
+define comma_set_element
+    ', [SP][set_element]
+end define
+
+define comma_expression
+    ', [SP][expression]
+end define
+
+define box_set_element
+	[opt set_element]
+end define
+define set_element
+    [expression] [opt dotdot_expr]
+end define
+
+% Allow assignment in expression (keyword argument?):
+%	Book.Close(SaveChanges:=False);
+%	Range := Doc.Range(start:=Word.Selection.End,end:=Word.Selection.End);
+define argm
+    [commentlist] [expression][opt argmfmt][opt argmfmt] %width & precision
+	| [id] ':= [argm]
+	| [end_kw] ':= [argm]
+end define
+
+% Allow colon separated argument parts:
+%	Str(R:Width:Places, PCharArray(Dest)^);
+define argmfmt
+  ': [anynumber]
+	| ': [id]
+end define
+
+%-----------------------    Statements  ---------------------------------------------
+
+define labelid_colon
+    [label_id] [colon]
+end define
+
+define statement_list
+    [IN]
+    [many_statement_semi]
+    [box_statement][!]
+    [EX]
+end define
+
+define many_statement_semi
+    [repeat statement_semi]
+end define
+define statement_semi
+    [statement_semi_comp]
+	| [labelid_colon]
+end define
+
+define statement_semi_comp
+    [box_statement][commentlist] '; [NL]
+end define
+
+define box_statement
+    [opt statement]
+end define
+define statement
+    [commentlist] [opt labelid_colon] [unlabeled_stm]
+end define
+
+define unlabeled_stm
+        [sequence_stm]
+    |   [loop_stm]
+    |   [with_stm]
+    |   [try_finally_stm]
+    |   [try_except_stm]
+    |   [selection_stm]
+    |   [jump_stm]
+    |   [assign_stm]
+    |   [call_stm]
+end define
+
+define assign_stm
+     [expr]':= [expr]
+end define
+
+define call_stm
+        [expr]   
+    |   'inherited
+end define
+
+define jump_stm
+     [goto_stm]   |   [raise_stm]
+end define
+
+define goto_stm
+     'goto [label_id]
+end define
+
+define sequence_stm
+	[commentlist]
+    [begin_kw] [NL]
+         [statement_list]
+    [end_kw]
+end define
+
+% Allow qualified id in for in:
+%	for Iter in Manager.Method.Types do begin
+define loop_stm
+        [rep_stm]
+    |   [while_stm]
+    % for variable always local declared!
+    |	[for_stm_count]
+    |   [for_in_stm]
+end define
+
+define rep_stm
+	'repeat [statement_list] 'until [expr]
+end define
+
+define while_stm
+    'while [expr] 'do [nested_stm]
+end define
+
+define for_stm_count
+    'for [id]':=[expr] [to_or_downto] [expr] 'do [nested_stm]
+end define
+
+define for_in_stm
+    'for [id] 'in [qualified_id] 'do [nested_stm]
+end define
+
+define selection_stm
+		[if_stm]
+	|	[case_stm]
+	| 'if [expr] [nested_stm][box_else_stm]
+end define
+
+define if_stm
+	'if [expr] 'then [nested_stm][box_else_stm]
+end define
+
+define case_stm
+   'case [expr] 'of 
+		[many_case_selector]
+		[box_case_else]
+	[end_kw]
+end define
+
+define with_stm
+    'with [list expr+] 'do [nested_stm]
+end define
+
+define try_finally_stm
+    'try [NL]
+      [statement_list]
+    'finally[NL]
+      [statement_list]
+    [end_kw]
+end define
+
+define try_except_stm
+    'try [NL]
+      [statement_list]
+    'except[NL]
+      [exception_block] 
+    [end_kw]
+end define
+
+define nested_stm
+    [sequence_stm] | 
+    [NL][IN][opt statement][EX]
+end define
+
+define box_else_stm
+	[opt else_stm]
+end define
+define else_stm
+  [commentlist]
+     [NL]'else [nested_stm]
+end define
+
+define many_case_selector
+	[repeat case_selector]
+end define
+define case_selector
+    [list case_label][colon][nested_stm][box_semi] %last branch don't requires ';
+end define
+
+define box_semi
+	[opt ';]
+end define
+
+define case_label
+    [commentlist] [expr] [opt dotdot_expr] [NL]
+end define
+
+define box_case_else
+	[opt case_else]
+end define
+define case_else
+	[commentlist]
+    'else
+        [statement_list]
+end define
+
+define to_or_downto
+    'to | 'downto
+end define
+
+define exception_block
+        [exception_block_comp]
+    |   [statement_list]
+end define
+
+define exception_block_comp
+	[exception_handler_list]
+	[box_case_else]
+end define
+
+define exception_handler_list
+       [repeat exception_handler_semi]
+       [opt exception_handler]
+end define
+
+define exception_handler_semi
+    [exception_handler] '; [NL]
+end define
+
+define exception_handler
+    'on [box_exception_var] [type_spec] 'do [nested_stm]
+end define
+
+define box_exception_var
+	[opt exception_var]
+end define
+define exception_var
+    [id][colon]
+end define
+
+define raise_stm
+    'raise [box_expr] [box_at_address]
+end define
+
+define box_at_address
+	[opt at_address]
+end define
+define at_address
+    'at [expr]
+end define
+
+#end if
